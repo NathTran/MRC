@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test de confiance en soi — Fanget</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f0f4f8; color: #1a1a1a; padding: 20px; }
+
+    .header { background: #004b7a; color: #fff; border-radius: 10px; padding: 18px 22px; margin-bottom: 18px; }
+    .header h1 { font-size: 1.2em; margin-bottom: 4px; }
+    .header p  { font-size: 0.82em; opacity: 0.85; line-height: 1.5; }
+
+    .info-eleve { display: flex; flex-wrap: wrap; gap: 12px; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 11px 15px; margin-bottom: 16px; }
+    .info-eleve label { display: flex; align-items: center; gap: 6px; font-size: 0.83em; color: #555; }
+    .info-eleve input { border: none; border-bottom: 1.5px solid #aaa; outline: none; font-size: 0.83em; width: 150px; padding: 2px 4px; background: transparent; }
+
+    .consigne { background: #e8f4fd; border-left: 4px solid #004b7a; border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 18px; font-size: 0.86em; line-height: 1.7; }
+    .consigne strong { color: #004b7a; }
+
+    .prog-wrap { background: #e0e0e0; border-radius: 20px; height: 7px; margin-bottom: 5px; overflow: hidden; }
+    .prog-fill  { background: #27ae60; height: 100%; border-radius: 20px; transition: width 0.35s; width: 0%; }
+    .prog-label { font-size: 0.77em; color: #666; margin-bottom: 16px; }
+
+    .section-title { background: #004b7a; color: #fff; border-radius: 6px; padding: 7px 14px; font-size: 0.85em; font-weight: bold; margin: 18px 0 8px; display: flex; align-items: center; justify-content: space-between; }
+    .section-badge { background: rgba(255,255,255,0.2); border-radius: 4px; padding: 2px 8px; font-size: 0.8em; }
+
+    .q-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
+    .q-table thead th { background: #004b7a; color: #fff; padding: 8px 6px; font-size: 0.78em; text-align: center; font-weight: bold; }
+    .q-table thead th:first-child { text-align: left; padding-left: 12px; }
+    .q-table tbody tr { border-bottom: 1px solid #eee; }
+    .q-table tbody tr:last-child { border-bottom: none; }
+    .q-table tbody tr.answered { background: #f0f9f4; }
+    .q-table td { padding: 9px 6px; font-size: 0.84em; vertical-align: middle; }
+    .q-table td:first-child { padding-left: 12px; line-height: 1.4; color: #222; }
+    .q-table td:not(:first-child) { text-align: center; }
+    .q-table input[type="radio"] { width: 18px; height: 18px; cursor: pointer; accent-color: #004b7a; }
+
+    .btn-valider { display: block; width: 100%; max-width: 280px; margin: 20px auto; padding: 11px 22px; border-radius: 30px; background: #004b7a; color: #fff; border: none; cursor: pointer; font-size: 0.95em; font-weight: bold; transition: background 0.18s, transform 0.1s; }
+    .btn-valider:hover:not(:disabled) { background: #003660; transform: translateY(-1px); }
+    .btn-valider:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* RÉSULTAT */
+    #resultat { display: none; }
+
+    .res-card { border-radius: 10px; padding: 18px 22px; margin-bottom: 18px; }
+    .res-header { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+    .res-emoji { font-size: 2.6em; line-height: 1; }
+    .res-score { font-size: 2.2em; font-weight: bold; }
+    .res-sublabel { font-size: 0.83em; margin-top: 2px; }
+    .res-signif { font-size: 1em; font-weight: bold; margin-bottom: 8px; }
+    .res-conclu { font-size: 0.85em; line-height: 1.7; }
+    .r-rouge  { background: #fadbd8; border: 2px solid #e74c3c; color: #6e0e0a; }
+    .r-orange { background: #fdebd0; border: 2px solid #e67e22; color: #784212; }
+    .r-bleu   { background: #d6eaf8; border: 2px solid #2e86c1; color: #1a5276; }
+    .r-vert   { background: #d5f5e3; border: 2px solid #27ae60; color: #1e8449; }
+
+    /* TABLEAU BILAN — cœur du lien sous-score → niveau → moyen */
+    .bilan-titre { color: #004b7a; font-size: 0.95em; font-weight: bold; margin: 0 0 10px; }
+    .bilan-wrap { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px 18px; margin-bottom: 18px; }
+    .bilan-table { width: 100%; border-collapse: collapse; font-size: 0.83em; }
+    .bilan-table thead th { background: #004b7a; color: #fff; padding: 8px 10px; text-align: left; font-size: 0.82em; }
+    .bilan-table tbody td { border: 1px solid #e0e0e0; padding: 10px 10px; vertical-align: top; line-height: 1.5; }
+    .bilan-table tbody tr:nth-child(even) td { background: #f8f9fa; }
+    .tag { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 0.78em; font-weight: bold; margin-bottom: 4px; }
+    .tag-rouge  { background: #fadbd8; color: #922b21; }
+    .tag-orange { background: #fdebd0; color: #784212; }
+    .tag-vert   { background: #d5f5e3; color: #1e8449; }
+    .niveau-pill { display: inline-block; border-radius: 20px; padding: 3px 10px; font-size: 0.8em; font-weight: bold; }
+    .n1-pill { background: #e8f4fd; color: #1a5276; border: 1px solid #aed6f1; }
+    .n2-pill { background: #d5f5e3; color: #1e8449; border: 1px solid #a9dfbf; }
+    .n3-pill { background: #fef9e7; color: #7d6608; border: 1px solid #f9e79f; }
+
+    /* MOYENS PERSONNELS — affichés uniquement pour les niveaux insuffisants */
+    .moyens-wrap { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px 18px; margin-bottom: 18px; }
+    .moyens-titre { color: #004b7a; font-size: 0.95em; font-weight: bold; margin-bottom: 12px; }
+    .moy-grid { display: flex; gap: 14px; flex-wrap: wrap; }
+    .moy-col { flex: 1 1 45%; min-width: 200px; }
+    .moy-col h3 { font-size: 0.84em; font-weight: bold; margin-bottom: 8px; padding: 6px 10px; border-radius: 6px; }
+    .h-n1 { background: #e8f4fd; color: #1a5276; }
+    .h-n2 { background: #d5f5e3; color: #1e8449; }
+    .h-n3 { background: #fef9e7; color: #7d6608; }
+    .chk  { list-style: none; padding: 0; }
+    .chk li { display: flex; align-items: flex-start; gap: 7px; margin-bottom: 7px; font-size: 0.83em; line-height: 1.5; }
+    .chk input { margin-top: 3px; accent-color: #004b7a; flex-shrink: 0; }
+
+    .bottom-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 20px 0 30px; }
+    .btn { padding: 8px 20px; border-radius: 24px; border: none; cursor: pointer; font-size: 0.86em; font-weight: bold; }
+    .btn:hover { opacity: 0.85; }
+    .btn-reinit { background: #e9ecef; color: #333; border: 1px solid #ccc; }
+    .btn-print  { background: #27ae60; color: #fff; }
+
+    @media print {
+      body { background: #fff; padding: 8px; }
+      .btn-valider, .bottom-btns, .consigne { display: none !important; }
+      #resultat { display: block !important; }
+      .q-table, .bilan-wrap, .moyens-wrap { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Test de confiance en soi</h1>
+  <p>D'après Frédéric Fanget, <em>Oser — Thérapie de la confiance en soi</em>, Odile Jacob, 2002 · 20 affirmations · MME TRAN · 2de MRC</p>
+</div>
+
+<div class="info-eleve">
+  <label>Nom : <input type="text" id="nom" placeholder="………………………………"></label>
+  <label>Prénom : <input type="text" id="prenom" placeholder="………………………………"></label>
+  <label>Classe : <input type="text" id="classe" placeholder="2de MRC"></label>
+  <label>Date : <input type="text" id="date" placeholder="………………………………"></label>
+</div>
+
+<div class="consigne">
+  <strong>Consigne :</strong> Pour chacune des 20 affirmations, coche spontanément la case qui te correspond le mieux dans ta vie de tous les jours. Il n'y a pas de bonne ou mauvaise réponse.<br><br>
+  <strong>Barème :</strong> Tout à fait vrai = 1 pt &nbsp;·&nbsp; Plutôt vrai = 2 pts &nbsp;·&nbsp; Plutôt faux = 3 pts &nbsp;·&nbsp; Tout à fait faux = 4 pts<br>
+  <em>Plus ton score est élevé, plus ta confiance en toi est grande. Score minimum possible : 20 · Score maximum possible : 80.</em>
+</div>
+
+<div class="prog-wrap"><div class="prog-fill" id="prog-fill"></div></div>
+<div class="prog-label" id="prog-label">0 / 20 affirmations cochées</div>
+
+<div id="qzone"></div>
+<button class="btn-valider" id="btn-val" onclick="calculer()" disabled>Voir mon résultat →</button>
+
+<!-- ============ RÉSULTAT ============ -->
+<div id="resultat">
+
+  <!-- Score global -->
+  <div class="res-card" id="res-card">
+    <div class="res-header">
+      <div class="res-emoji" id="res-emoji"></div>
+      <div>
+        <div class="res-score" id="res-score"></div>
+        <div class="res-sublabel" id="res-sublabel"></div>
+      </div>
+    </div>
+    <div class="res-signif" id="res-signif"></div>
+    <div class="res-conclu" id="res-conclu"></div>
+  </div>
+
+  <!-- Tableau bilan : sous-score → niveau → moyen -->
+  <div class="bilan-wrap">
+    <div class="bilan-titre">Mon bilan détaillé — Ce que mes sous-scores révèlent</div>
+    <table class="bilan-table">
+      <thead>
+        <tr>
+          <th style="width:24%">Dimension évaluée</th>
+          <th style="width:15%">Mon sous-score</th>
+          <th style="width:18%">Interprétation</th>
+          <th style="width:22%">Niveau de confiance concerné</th>
+          <th style="width:21%">Ce que je dois travailler</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>A — Confiance en mes actes</strong><br><small style="color:#777">Q1 à Q10 · /40</small></td>
+          <td style="text-align:center"><strong id="ss-a-val" style="font-size:1.2em"></strong></td>
+          <td><span id="ss-a-tag"></span></td>
+          <td><span class="niveau-pill n2-pill">Niveau 2 — Foi en ses capacités</span><br><small style="color:#555;font-size:0.82em">Croire qu'on peut faire face, oser agir malgré la peur</small></td>
+          <td id="ss-a-action" style="font-size:0.82em; line-height:1.5"></td>
+        </tr>
+        <tr>
+          <td><strong>B — Affirmation de soi</strong><br><small style="color:#777">Q11 à Q15 · /20</small></td>
+          <td style="text-align:center"><strong id="ss-b-val" style="font-size:1.2em"></strong></td>
+          <td><span id="ss-b-tag"></span></td>
+          <td><span class="niveau-pill n1-pill">Niveau 1 — Amour de soi</span><br><small style="color:#555;font-size:0.82em">Se respecter, défendre ses limites, dire non</small></td>
+          <td id="ss-b-action" style="font-size:0.82em; line-height:1.5"></td>
+        </tr>
+        <tr>
+          <td><strong>C — Estime de soi</strong><br><small style="color:#777">Q16 à Q20 · /20</small></td>
+          <td style="text-align:center"><strong id="ss-c-val" style="font-size:1.2em"></strong></td>
+          <td><span id="ss-c-tag"></span></td>
+          <td><span class="niveau-pill n1-pill">Niveau 1 — Amour de soi</span><br><small style="color:#555;font-size:0.82em">L'image que j'ai de moi-même, ma valeur personnelle</small></td>
+          <td id="ss-c-action" style="font-size:0.82em; line-height:1.5"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Moyens personnels — uniquement pour les niveaux en rouge/orange -->
+  <div class="moyens-wrap" id="moyens-wrap">
+    <div class="moyens-titre">Mes moyens personnels — Ce que je coche pour progresser</div>
+    <div class="moy-grid" id="moy-grid"></div>
+  </div>
+
+  <!-- Auto-évaluation des 3 niveaux -->
+  <div class="bilan-wrap">
+    <div class="bilan-titre">Mon auto-positionnement sur les 3 niveaux de confiance en soi</div>
+    <table class="bilan-table">
+      <thead>
+        <tr>
+          <th>Niveau</th>
+          <th>Ce que ça signifie concrètement</th>
+          <th>Mon propre niveau (à cocher)</th>
+          <th>Ce que je vais faire pour progresser</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="niveau-pill n1-pill">Niveau 1<br>Amour de soi</span></td>
+          <td>Défendre mon intégrité. Me respecter. Ne pas laisser quelqu'un me dévaloriser. Avoir le droit d'exister tel(le) que je suis.</td>
+          <td>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:4px;font-size:0.82em;cursor:pointer"><input type="radio" name="niv1"> Oui, toujours</label>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:4px;font-size:0.82em;cursor:pointer"><input type="radio" name="niv1"> Oui, parfois</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:0.82em;cursor:pointer"><input type="radio" name="niv1"> Non, rarement</label>
+          </td>
+          <td><textarea style="width:100%;height:60px;font-size:0.82em;border:1px solid #ddd;border-radius:4px;padding:4px;resize:none" placeholder="Pour progresser, je vais…"></textarea></td>
+        </tr>
+        <tr>
+          <td><span class="niveau-pill n2-pill">Niveau 2<br>Foi en ses capacités</span></td>
+          <td>Croire que je peux trouver des solutions. Connaître mes qualités ET mes limites. Oser agir malgré la peur et le stress.</td>
+          <td>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:4px;font-size:0.82em;cursor:pointer"><input type="radio" name="niv2"> Oui, toujours</label>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:4px;font-size:0.82em;cursor:pointer"><input type="radio" name="niv2"> Oui, parfois</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:0.82em;cursor:pointer"><input type="radio" name="niv2"> Non, rarement</label>
+          </td>
+          <td><textarea style="width:100%;height:60px;font-size:0.82em;border:1px solid #ddd;border-radius:4px;padding:4px;resize:none" placeholder="Pour progresser, je vais…"></textarea></td>
+        </tr>
+        <tr>
+          <td><span class="niveau-pill n3-pill">Niveau 3<br>Validation des réussites</span></td>
+          <td>Reconnaître ce que j'ai déjà réussi. Me féliciter sans "oui, mais…". M'appuyer sur mes succès pour passer à l'action.</td>
+          <td>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:4px;font-size:0.82em;cursor:pointer"><input type="radio" name="niv3"> Oui, toujours</label>
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:4px;font-size:0.82em;cursor:pointer"><input type="radio" name="niv3"> Oui, parfois</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:0.82em;cursor:pointer"><input type="radio" name="niv3"> Non, rarement</label>
+          </td>
+          <td><textarea style="width:100%;height:60px;font-size:0.82em;border:1px solid #ddd;border-radius:4px;padding:4px;resize:none" placeholder="Pour progresser, je vais…"></textarea></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:0.78em;color:#777;margin-top:8px;font-style:italic">
+      💡 Lis les résultats de tes sous-scores A, B et C ci-dessus pour savoir quel(s) niveau(x) tu dois travailler en priorité.
+    </p>
+  </div>
+
+  <div class="bottom-btns">
+    <button class="btn btn-reinit" onclick="reinit()">Recommencer le test</button>
+    <button class="btn btn-print"  onclick="window.print()">Imprimer mes résultats</button>
+  </div>
+
+</div><!-- fin #resultat -->
+
+<script>
+// ===== 20 QUESTIONS EXACTES DE FANGET =====
+const Qs = [
+  { txt:"Je doute de mes capacités.", sec:"A" },
+  { txt:"J'ai de la peine à prendre des décisions qui me concernent.", sec:"A" },
+  { txt:"Je m'habille très discrètement pour passer inaperçu(e).", sec:"A" },
+  { txt:"J'ai peur de l'échec.", sec:"A" },
+  { txt:"Je préfère renoncer si je ne suis pas sûr(e) de réussir.", sec:"A" },
+  { txt:"J'ai tendance à garder mes émotions pour moi plutôt que de les exprimer.", sec:"A" },
+  { txt:"Tout imprévu m'inquiète, surtout si je ne le maîtrise pas.", sec:"A" },
+  { txt:"Je suis plutôt négatif(ve) sur moi-même.", sec:"A" },
+  { txt:"Je me plains souvent.", sec:"A" },
+  { txt:"Je suis perfectionniste.", sec:"A" },
+  { txt:"J'ai beaucoup de difficultés à dire non.", sec:"B" },
+  { txt:"Les compliments me mettent mal à l'aise.", sec:"B" },
+  { txt:"Je n'exprime pas souvent mes besoins et mes désirs.", sec:"B" },
+  { txt:"Les critiques me déstabilisent et je ne sais pas bien y répondre.", sec:"B" },
+  { txt:"Je ne prends pas souvent la parole en groupe.", sec:"B" },
+  { txt:"Parfois je pense que je ne vaux rien.", sec:"C" },
+  { txt:"Je pense que j'ai beaucoup plus de défauts que de qualités.", sec:"C" },
+  { txt:"Je pense que je suis une personne moins valable que les autres.", sec:"C" },
+  { txt:"J'aimerais avoir plus de respect pour moi-même.", sec:"C" },
+  { txt:"J'ai une opinion négative de moi-même.", sec:"C" },
+];
+
+// ===== RÉSULTATS GLOBAUX FANGET (p.35) =====
+const RES = [
+  { max:40, cls:"r-rouge",  emoji:"📖",
+    sublabel:"Score entre 20 et 40",
+    signif:"Votre confiance en vous est défaillante ou mauvaise.",
+    conclu:"Il est nécessaire de vous en occuper sérieusement. Vous manquez de confiance en vous de façon significative. Concentre-toi en priorité sur les niveaux signalés en rouge ci-dessous et coche les moyens personnels correspondants. La confiance en soi se construit — il n'est jamais trop tard." },
+  { max:60, cls:"r-orange", emoji:"💪",
+    sublabel:"Score entre 40 et 60",
+    signif:"Votre confiance en vous est globalement satisfaisante.",
+    conclu:"Vérifie tes sous-scores pour identifier quel domaine spécifique demande encore du travail. Une amélioration de ton affirmation de soi ou de ton estime de toi aura un effet en cascade sur ta confiance globale." },
+  { max:80, cls:"r-vert",   emoji:"🎉",
+    sublabel:"Score entre 60 et 80",
+    signif:"Votre confiance en vous est excellente.",
+    conclu:"Vérifie seulement que tu n'es pas dans le cas d'un excès de confiance qui t'amènerait à dominer les autres ou à ne plus tenir compte de leurs besoins. Continue à entretenir cette confiance dans les situations nouvelles." },
+];
+
+// ===== INTERPRÉTATION SOUS-SCORES FANGET =====
+// Seuil A : < 20/40 → insuffisant | Seuil B et C : < 10/20 → insuffisant
+function interpSS(val, max) {
+  const pct = val / max;
+  if (pct < 0.5)  return { cls:"tag-rouge",  txt:"Insuffisant ⚠️", ok:false };
+  if (pct < 0.75) return { cls:"tag-orange", txt:"Fragile",         ok:"mid" };
+  return               { cls:"tag-vert",   txt:"Satisfaisant ✓",  ok:true };
+}
+
+// ===== MOYENS PERSONNELS par niveau =====
+const MOYENS = {
+  n1: {
+    titre: "Niveau 1 — Amour de soi (sous-scores B et/ou C insuffisants)",
+    cls: "h-n1",
+    items: [
+      "M'aimer et m'accepter tel(le) que je suis, avec mes forces et mes faiblesses.",
+      "Ne pas laisser quelqu'un altérer mon intégrité ou remettre en cause ma valeur.",
+      "Apprendre à dire non clairement et poliment, sans me justifier excessivement.",
+      "Exprimer mes besoins et mes désirs sans attendre que les autres les devinent.",
+      "Me défendre calmement face aux critiques, sans me laisser déstabiliser.",
+      "Prendre la parole en groupe, même brièvement : mon avis mérite d'être entendu.",
+    ]
+  },
+  n2: {
+    titre: "Niveau 2 — Foi en ses capacités (sous-score A insuffisant)",
+    cls: "h-n2",
+    items: [
+      "Me rappeler les situations où j'ai déjà réussi quelque chose de difficile.",
+      "Passer à l'action sur de petites choses, même si je ne suis pas sûr(e) de réussir.",
+      "Accepter l'imprévu : faire face à une situation inconnue est une compétence qui se développe.",
+      "Relativiser l'échec : une erreur est une information, pas un jugement sur ma valeur.",
+      "M'encourager intérieurement : 'Je peux y arriver, j'ai déjà surmonté des obstacles.'",
+      "Renoncer au perfectionnisme : 'Fait' vaut mieux que 'parfait mais jamais commencé'.",
+    ]
+  },
+  n3: {
+    titre: "Niveau 3 — Validation des réussites (pour aller plus loin)",
+    cls: "h-n3",
+    items: [
+      "Valider mes réussites sans le 'oui, mais…' qui annule immédiatement le positif.",
+      "Tenir un journal de mes petits succès quotidiens — même les plus simples comptent.",
+      "Accepter les compliments sans les minimiser : dire 'merci' et y croire.",
+      "Me féliciter à voix haute après une tâche réussie, même si personne d'autre ne le fait.",
+    ]
+  }
+};
+
+// ===== ÉTAT =====
+let rep = {};
+
+// ===== RENDU DES QUESTIONS =====
+function renderQs() {
+  const zone = document.getElementById('qzone');
+  zone.innerHTML = '';
+  let curSec = null;
+  const secInfo = {
+    A: { label:"Confiance en mes actes", qs:"Q1 à Q10", max:"40 pts" },
+    B: { label:"Affirmation de soi",     qs:"Q11 à Q15", max:"20 pts" },
+    C: { label:"Estime de soi",          qs:"Q16 à Q20", max:"20 pts" },
+  };
+
+  Qs.forEach((q, qi) => {
+    if (q.sec !== curSec) {
+      curSec = q.sec;
+      const info = secInfo[q.sec];
+      const div = document.createElement('div');
+      div.className = 'section-title';
+      div.innerHTML = `<span>Sous-score <strong>${q.sec}</strong> — ${info.label} &nbsp;(${info.qs})</span><span class="section-badge">${info.max}</span>`;
+      zone.appendChild(div);
+      const tbl = document.createElement('table');
+      tbl.className = 'q-table';
+      tbl.innerHTML = `<thead><tr>
+        <th>Affirmation</th>
+        <th>Tout à fait<br>vrai (1)</th>
+        <th>Plutôt<br>vrai (2)</th>
+        <th>Plutôt<br>faux (3)</th>
+        <th>Tout à fait<br>faux (4)</th>
+      </tr></thead><tbody id="tb-${q.sec}"></tbody>`;
+      zone.appendChild(tbl);
+    }
+    const tbody = document.getElementById('tb-' + q.sec);
+    const tr = document.createElement('tr');
+    tr.id = 'tr-' + qi;
+    let c = `<td>${qi+1}. ${q.txt}</td>`;
+    [1,2,3,4].forEach(pts => {
+      c += `<td><input type="radio" name="q${qi}" value="${pts}" onchange="onRep(${qi},${pts})"></td>`;
+    });
+    tr.innerHTML = c;
+    tbody.appendChild(tr);
+  });
+}
+
+function onRep(qi, pts) {
+  rep[qi] = pts;
+  document.getElementById('tr-'+qi).classList.add('answered');
+  const n = Object.keys(rep).length;
+  const pct = Math.round(n/Qs.length*100);
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-label').textContent = n+' / '+Qs.length+' affirmations cochées';
+  document.getElementById('btn-val').disabled = (n < Qs.length);
+}
+
+// ===== CALCUL =====
+function calculer() {
+  let sA=0, sB=0, sC=0;
+  Qs.forEach((q,qi)=>{
+    const p = rep[qi]||0;
+    if(q.sec==='A') sA+=p;
+    else if(q.sec==='B') sB+=p;
+    else sC+=p;
+  });
+  const total = sA+sB+sC;
+
+  // Score global
+  const res = RES.find(r=>total<=r.max)||RES[RES.length-1];
+  document.getElementById('res-card').className='res-card '+res.cls;
+  document.getElementById('res-emoji').textContent=res.emoji;
+  document.getElementById('res-score').textContent=total+' / 80';
+  document.getElementById('res-sublabel').textContent=res.sublabel;
+  document.getElementById('res-signif').textContent=res.signif;
+  document.getElementById('res-conclu').textContent=res.conclu;
+
+  // Sous-scores
+  const iA = interpSS(sA,40);
+  const iB = interpSS(sB,20);
+  const iC = interpSS(sC,20);
+
+  document.getElementById('ss-a-val').textContent = sA+' / 40';
+  document.getElementById('ss-b-val').textContent = sB+' / 20';
+  document.getElementById('ss-c-val').textContent = sC+' / 20';
+
+  const mkTag = (i,el)=>{
+    const sp=document.getElementById(el);
+    sp.className='tag '+i.cls;
+    sp.textContent=i.txt;
+  };
+  mkTag(iA,'ss-a-tag'); mkTag(iB,'ss-b-tag'); mkTag(iC,'ss-c-tag');
+
+  // Actions
+  document.getElementById('ss-a-action').textContent = iA.ok===true
+    ? 'Continue à oser agir dans les situations nouvelles. Tu y arrives !'
+    : iA.ok==='mid'
+    ? 'Travaille à passer à l\'action malgré la peur — commence par de petits défis à ta portée.'
+    : 'Priorité : apprendre à agir sans attendre d\'être sûr(e) de réussir. Voir les moyens du Niveau 2 ci-dessous.';
+
+  document.getElementById('ss-b-action').textContent = iB.ok===true
+    ? 'Continue à t\'exprimer et à défendre tes limites. Tu t\'affirmes bien !'
+    : iB.ok==='mid'
+    ? 'Entraîne-toi à dire non et à prendre la parole, même brièvement, dans les situations du quotidien.'
+    : 'Priorité : apprendre à dire non, exprimer tes besoins et te défendre face aux critiques. Voir les moyens du Niveau 1 ci-dessous.';
+
+  document.getElementById('ss-c-action').textContent = iC.ok===true
+    ? 'Tu as une bonne image de toi-même. Continue à te valoriser sans te comparer aux autres.'
+    : iC.ok==='mid'
+    ? 'Travaille à voir tes qualités autant que tes défauts. Tu as de la valeur — rappelle-toi en régulièrement.'
+    : 'Priorité : reconstruire une image positive de toi-même. Voir les moyens du Niveau 1 ci-dessous.';
+
+  // Moyens personnels — afficher seulement les niveaux concernés
+  const grid = document.getElementById('moy-grid');
+  grid.innerHTML = '';
+  const needN1 = iB.ok!==true || iC.ok!==true;
+  const needN2 = iA.ok!==true;
+  const needN3 = iA.ok===true && iB.ok===true && iC.ok===true; // bonus si tout est ok
+
+  if (!needN1 && !needN2 && !needN3) {
+    // tout ok
+    grid.innerHTML = '<p style="font-size:0.85em;color:#1e8449">✅ Tes trois sous-scores sont satisfaisants. Continue à entretenir ta confiance en toi au quotidien.</p>';
+  } else {
+    [needN2 && 'n2', needN1 && 'n1', needN3 && 'n3'].filter(Boolean).forEach(key => {
+      const m = MOYENS[key];
+      const col = document.createElement('div');
+      col.className = 'moy-col';
+      col.innerHTML = `<h3 class="${m.cls}">${m.titre}</h3>
+        <ul class="chk">${m.items.map(i=>`<li><input type="checkbox"> ${i}</li>`).join('')}</ul>`;
+      grid.appendChild(col);
+    });
+  }
+
+  document.getElementById('resultat').style.display='block';
+  document.getElementById('btn-val').style.display='none';
+  document.getElementById('resultat').scrollIntoView({behavior:'smooth'});
+}
+
+// ===== RÉINIT =====
+function reinit() {
+  rep={};
+  document.getElementById('resultat').style.display='none';
+  document.getElementById('btn-val').style.display='block';
+  document.getElementById('btn-val').disabled=true;
+  document.getElementById('prog-fill').style.width='0%';
+  document.getElementById('prog-label').textContent='0 / 20 affirmations cochées';
+  renderQs();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+renderQs();
+</script>
+</body>
+</html>
