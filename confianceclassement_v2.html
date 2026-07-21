@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Classer les éléments dans les niveaux de confiance</title>
+  <style>
+    /* ===== GÉNÉRAL ===== */
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; color: #1a1a1a; }
+    h1 { color: #004b7a; font-size: 1.4em; margin-bottom: 4px; }
+    .subtitle { color: #555; font-size: 0.9em; margin: 0 0 16px; }
+
+    /* ===== EN-TÊTE INFOS ÉLÈVE ===== */
+    .info-eleve { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; padding: 10px 14px; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
+    .info-eleve label { font-size: 0.85em; color: #555; display: flex; align-items: center; gap: 6px; }
+    .info-eleve input { border: none; border-bottom: 1px solid #aaa; outline: none; font-size: 0.85em; width: 160px; padding: 2px 4px; }
+
+    /* ===== LÉGENDE ===== */
+    .legende { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .leg-item { display: flex; align-items: center; gap: 6px; font-size: 0.85em; padding: 5px 10px; border-radius: 20px; font-weight: bold; }
+    .leg-n1 { background: #e8f4fd; color: #1a5276; border: 1px solid #aed6f1; }
+    .leg-n2 { background: #eafaf1; color: #1e8449; border: 1px solid #a9dfbf; }
+    .leg-n3 { background: #fef9e7; color: #9a7d0a; border: 1px solid #f9e79f; }
+
+    /* ===== ZONE ÉLÉMENTS À CLASSER ===== */
+    .items-section { margin-bottom: 20px; }
+    .items-section h2 { color: #004b7a; font-size: 1em; margin-bottom: 8px; }
+    .items-section p { font-size: 0.85em; color: #666; margin: 0 0 10px; }
+    #items { display: flex; flex-wrap: wrap; gap: 6px; }
+    .item {
+      padding: 5px 10px; border: 1px solid #bbb; border-radius: 4px;
+      cursor: pointer; background: #f7f7f7; font-size: 0.85em;
+      transition: background 0.15s, transform 0.1s;
+      user-select: none;
+    }
+    .item:hover { background: #e8f0f7; transform: translateY(-1px); }
+    .item.placed { opacity: 0.4; cursor: default; text-decoration: line-through; }
+    .item.selected { background: #d0ebff; border-color: #3498db; font-weight: bold; }
+
+    /* ===== BOUTONS NIVEAU (apparaissent au clic) ===== */
+    #choix-niveau { display: none; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; padding: 10px 14px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; align-items: center; }
+    #choix-niveau span { font-size: 0.85em; font-weight: bold; color: #856404; }
+    .btn-niveau {
+      padding: 5px 14px; border-radius: 20px; border: none; cursor: pointer;
+      font-size: 0.82em; font-weight: bold; transition: opacity 0.15s;
+    }
+    .btn-n1 { background: #aed6f1; color: #1a5276; }
+    .btn-n2 { background: #a9dfbf; color: #1e8449; }
+    .btn-n3 { background: #f9e79f; color: #9a7d0a; }
+    .btn-annuler { background: #e9ecef; color: #555; }
+    .btn-niveau:hover { opacity: 0.8; }
+
+    /* ===== COLONNES DE CLASSEMENT ===== */
+    .container { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+    .column { flex: 1 1 30%; min-width: 200px; border-radius: 6px; padding: 12px; min-height: 160px; }
+    .col-n1 { background: #e8f4fd; border: 1.5px solid #aed6f1; }
+    .col-n2 { background: #eafaf1; border: 1.5px solid #a9dfbf; }
+    .col-n3 { background: #fef9e7; border: 1.5px solid #f9e79f; }
+    .column h2 { font-size: 0.95em; margin: 0 0 8px; }
+    .col-n1 h2 { color: #1a5276; }
+    .col-n2 h2 { color: #1e8449; }
+    .col-n3 h2 { color: #9a7d0a; }
+    .assigned { font-size: 0.82em; color: #333; }
+    .assigned-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 3px 6px; margin: 3px 0; border-radius: 4px; background: rgba(255,255,255,0.7);
+    }
+    .assigned-item .txt { flex: 1; }
+    .assigned-item .btn-retirer {
+      background: none; border: none; cursor: pointer; color: #c0392b;
+      font-size: 1em; padding: 0 0 0 6px; line-height: 1;
+    }
+    .assigned-item .btn-retirer:hover { color: #922b21; }
+    /* après correction */
+    .assigned-item.correct { background: #d5f5e3; }
+    .assigned-item.incorrect { background: #fadbd8; }
+    .assigned-item .badge-result { font-size: 0.75em; margin-left: 4px; }
+
+    /* ===== BOUTONS ACTIONS ===== */
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .btn {
+      padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer;
+      font-size: 0.9em; font-weight: bold; transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-corriger { background: #004b7a; color: #fff; }
+    .btn-reinit { background: #e9ecef; color: #333; border: 1px solid #ccc; }
+    .btn-imprimer { background: #28a745; color: #fff; }
+
+    /* ===== SCORE ===== */
+    #score-zone { display: none; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 1em; }
+    .score-ok  { background: #d5f5e3; border: 1.5px solid #27ae60; color: #1e8449; }
+    .score-mid { background: #fef9e7; border: 1.5px solid #f1c40f; color: #9a7d0a; }
+    .score-ko  { background: #fadbd8; border: 1.5px solid #e74c3c; color: #922b21; }
+    #score-zone strong { font-size: 1.3em; }
+    #score-detail { font-size: 0.85em; margin-top: 4px; }
+    #manquants { font-size: 0.82em; margin-top: 6px; color: #555; }
+
+    /* ===== CORRIGÉ (affiché après correction) ===== */
+    #corrige-zone { display: none; }
+    #corrige-zone h2 { color: #004b7a; font-size: 1em; margin-bottom: 8px; }
+    .corrige-container { display: flex; gap: 14px; flex-wrap: wrap; }
+    .corrige-col { flex: 1 1 30%; min-width: 180px; padding: 10px 12px; border-radius: 6px; font-size: 0.82em; }
+    .corrige-col h3 { font-size: 0.9em; margin: 0 0 6px; }
+    .cc-n1 { background: #e8f4fd; border: 1px solid #aed6f1; }
+    .cc-n1 h3 { color: #1a5276; }
+    .cc-n2 { background: #eafaf1; border: 1px solid #a9dfbf; }
+    .cc-n2 h3 { color: #1e8449; }
+    .cc-n3 { background: #fef9e7; border: 1px solid #f9e79f; }
+    .cc-n3 h3 { color: #9a7d0a; }
+    .corrige-col ul { margin: 0; padding: 0 0 0 14px; }
+    .corrige-col li { margin: 2px 0; }
+
+    /* ===== IMPRESSION ===== */
+    @media print {
+      body { background: #fff; padding: 10px; font-size: 11pt; }
+      .actions, #choix-niveau, .btn-retirer, .items-section p { display: none !important; }
+      .item.placed { opacity: 1; text-decoration: none; display: none; }
+      .item:not(.placed) { background: #eee; }
+      #score-zone { display: block !important; }
+      #corrige-zone { display: block !important; }
+      .column { min-height: 120px; break-inside: avoid; }
+      .container { break-inside: avoid; }
+      h1 { font-size: 1.2em; }
+      .info-eleve { border: 1px solid #ccc; }
+      .info-eleve input { border-bottom: 1px solid #000; width: 200px; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Classer les éléments dans les niveaux de confiance</h1>
+<p class="subtitle">Décathlon Alençon · 2de MRC · MME TRAN</p>
+
+<!-- EN-TÊTE ÉLÈVE -->
+<div class="info-eleve">
+  <label>Nom : <input type="text" id="nom" placeholder="………………………………"></label>
+  <label>Prénom : <input type="text" id="prenom" placeholder="………………………………"></label>
+  <label>Classe : <input type="text" id="classe" placeholder="2de MRC"></label>
+  <label>Date : <input type="text" id="date" placeholder="………………………………"></label>
+</div>
+
+<!-- LÉGENDE -->
+<div class="legende">
+  <div class="leg-item leg-n1">Niveau 1 — Amour de soi : se respecter, ne pas se dévaloriser</div>
+  <div class="leg-item leg-n2">Niveau 2 — Foi en ses capacités : croire qu'on peut apprendre et progresser</div>
+  <div class="leg-item leg-n3">Niveau 3 — Validation des réussites : s'appuyer sur ses succès pour agir</div>
+</div>
+
+<!-- ÉLÉMENTS À CLASSER -->
+<div class="items-section">
+  <h2>Éléments à classer</h2>
+  <p>Clique sur un élément, puis choisis un niveau. Tu peux retirer un élément mal placé avec ✕.</p>
+  <div id="items"></div>
+</div>
+
+<!-- CHOIX DU NIVEAU (s'affiche au clic) -->
+<div id="choix-niveau">
+  <span id="choix-label">Où classer cet élément ?</span>
+  <button class="btn-niveau btn-n1" onclick="assignToLevel(1)">Niveau 1 — Amour de soi</button>
+  <button class="btn-niveau btn-n2" onclick="assignToLevel(2)">Niveau 2 — Foi en ses capacités</button>
+  <button class="btn-niveau btn-n3" onclick="assignToLevel(3)">Niveau 3 — Validation des réussites</button>
+  <button class="btn-niveau btn-annuler" onclick="cancelSelection()">Annuler</button>
+</div>
+
+<!-- COLONNES -->
+<div class="container">
+  <div class="column col-n1" id="col-n1">
+    <h2>Niveau 1 — Amour de soi</h2>
+    <div class="assigned" id="assigned-n1"></div>
+  </div>
+  <div class="column col-n2" id="col-n2">
+    <h2>Niveau 2 — Foi en ses capacités</h2>
+    <div class="assigned" id="assigned-n2"></div>
+  </div>
+  <div class="column col-n3" id="col-n3">
+    <h2>Niveau 3 — Validation des réussites</h2>
+    <div class="assigned" id="assigned-n3"></div>
+  </div>
+</div>
+
+<!-- SCORE -->
+<div id="score-zone">
+  <div id="score-texte"></div>
+  <div id="score-detail"></div>
+  <div id="manquants"></div>
+</div>
+
+<!-- ACTIONS -->
+<div class="actions">
+  <button class="btn btn-corriger" onclick="corriger()">Corriger et voir mon score</button>
+  <button class="btn btn-reinit" onclick="reinitialiser()">Recommencer</button>
+  <button class="btn btn-imprimer" onclick="window.print()">Imprimer</button>
+</div>
+
+<!-- CORRIGÉ -->
+<div id="corrige-zone">
+  <h2>Corrigé complet</h2>
+  <div class="corrige-container">
+    <div class="corrige-col cc-n1">
+      <h3>Niveau 1 — Amour de soi</h3>
+      <ul id="corr-n1"></ul>
+    </div>
+    <div class="corrige-col cc-n2">
+      <h3>Niveau 2 — Foi en ses capacités</h3>
+      <ul id="corr-n2"></ul>
+    </div>
+    <div class="corrige-col cc-n3">
+      <h3>Niveau 3 — Validation des réussites</h3>
+      <ul id="corr-n3"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DONNÉES =====
+const elements = [
+  { text: "Peur du regard des autres",                      niveau: 1 },
+  { text: "Honte",                                          niveau: 1 },
+  { text: "Je me sens nul / nulle",                         niveau: 1 },
+  { text: "Je me sens illégitime dans le métier",           niveau: 1 },
+  { text: "Je me compare aux autres et je me sens moins bien", niveau: 1 },
+  { text: "Je n'ai pas confiance en moi",                   niveau: 1 },
+  { text: "Je ne sais pas encore comment parler au client", niveau: 2 },
+  { text: "Je n'ose pas poser des questions",               niveau: 2 },
+  { text: "Je ne connais pas bien le métier",               niveau: 2 },
+  { text: "Je ne connais pas les produits",                 niveau: 2 },
+  { text: "Je manque d'expérience",                         niveau: 2 },
+  { text: "Je ne connais pas le vocabulaire professionnel", niveau: 2 },
+  { text: "J'ai peur de ne pas savoir faire",               niveau: 2 },
+  { text: "Je suis très stressé(e)",                        niveau: 2 },
+  { text: "J'ai peur du client",                            niveau: 2 },
+  { text: "Je ne comprends pas tout ce qu'on me demande",   niveau: 2 },
+  { text: "Je n'ose pas prendre d'initiative",              niveau: 2 },
+  { text: "J'ai peur d'agir",                               niveau: 2 },
+  { text: "Peur de se tromper",                             niveau: 2 },
+  { text: "J'oublie mes réussites",                         niveau: 3 },
+  { text: "Je ne vois pas mes progrès",                     niveau: 3 },
+  { text: "Je n'arrive pas à me féliciter",                 niveau: 3 },
+  { text: "Je n'arrive pas à m'encourager",                 niveau: 3 },
+  { text: "Je manque de motivation",                        niveau: 3 },
+];
+
+// État
+let selectedIndex = null;
+const placements = {}; // index → niveau choisi
+
+// ===== INIT =====
+function renderItems() {
+  const container = document.getElementById('items');
+  container.innerHTML = '';
+  elements.forEach((el, i) => {
+    const div = document.createElement('div');
+    div.className = 'item' + (placements[i] !== undefined ? ' placed' : '');
+    div.textContent = el.text;
+    div.dataset.index = i;
+    div.onclick = () => { if (placements[i] === undefined) selectItem(i); };
+    container.appendChild(div);
+  });
+}
+
+function renderColumns() {
+  [1, 2, 3].forEach(n => {
+    const col = document.getElementById('assigned-n' + n);
+    col.innerHTML = '';
+    Object.entries(placements).forEach(([i, niv]) => {
+      if (niv !== n) return;
+      const row = document.createElement('div');
+      row.className = 'assigned-item';
+      row.dataset.index = i;
+      row.innerHTML = '<span class="txt">' + elements[i].text + '</span>'
+        + '<button class="btn-retirer" title="Retirer" onclick="retirer(' + i + ')">✕</button>';
+      col.appendChild(row);
+    });
+  });
+}
+
+// ===== SÉLECTION =====
+function selectItem(index) {
+  selectedIndex = index;
+  document.querySelectorAll('.item').forEach(el => el.classList.remove('selected'));
+  document.querySelector('.item[data-index="' + index + '"]').classList.add('selected');
+  document.getElementById('choix-label').textContent = '→ Où classer : "' + elements[index].text + '" ?';
+  document.getElementById('choix-niveau').style.display = 'flex';
+}
+
+function cancelSelection() {
+  selectedIndex = null;
+  document.querySelectorAll('.item').forEach(el => el.classList.remove('selected'));
+  document.getElementById('choix-niveau').style.display = 'none';
+}
+
+function assignToLevel(niveau) {
+  if (selectedIndex === null) return;
+  placements[selectedIndex] = niveau;
+  cancelSelection();
+  renderItems();
+  renderColumns();
+}
+
+function retirer(index) {
+  delete placements[index];
+  renderItems();
+  renderColumns();
+}
+
+// ===== CORRECTION =====
+function corriger() {
+  let correct = 0, incorrect = 0, nonClasses = 0;
+  const incorrects = [];
+  const nonClassesList = [];
+
+  elements.forEach((el, i) => {
+    if (placements[i] === undefined) {
+      nonClasses++;
+      nonClassesList.push(el.text);
+    } else if (placements[i] === el.niveau) {
+      correct++;
+    } else {
+      incorrect++;
+      incorrects.push(el.text);
+    }
+  });
+
+  const total = elements.length;
+  const scoreZone = document.getElementById('score-zone');
+  const texte = document.getElementById('score-texte');
+  const detail = document.getElementById('score-detail');
+  const manquants = document.getElementById('manquants');
+
+  // Classe CSS selon score
+  scoreZone.className = '';
+  const pct = correct / total;
+  if (pct >= 0.8) scoreZone.classList.add('score-ok');
+  else if (pct >= 0.5) scoreZone.classList.add('score-mid');
+  else scoreZone.classList.add('score-ko');
+
+  const emoji = pct >= 0.8 ? '🎉' : pct >= 0.5 ? '💪' : '📖';
+  texte.innerHTML = emoji + ' Score : <strong>' + correct + ' / ' + total + '</strong> bonne' + (correct > 1 ? 's' : '') + ' réponse' + (correct > 1 ? 's' : '');
+  detail.innerHTML = '✅ Corrects : ' + correct + ' &nbsp;|&nbsp; ❌ Incorrects : ' + incorrect + ' &nbsp;|&nbsp; ⬜ Non classés : ' + nonClasses;
+
+  if (nonClassesList.length > 0) {
+    manquants.innerHTML = '<em>Non classés : ' + nonClassesList.join(' / ') + '</em>';
+  } else {
+    manquants.innerHTML = '';
+  }
+
+  scoreZone.style.display = 'block';
+
+  // Colorier les items dans les colonnes
+  document.querySelectorAll('.assigned-item').forEach(row => {
+    const i = parseInt(row.dataset.index);
+    row.classList.remove('correct', 'incorrect');
+    if (placements[i] === elements[i].niveau) {
+      row.classList.add('correct');
+      row.querySelector('.txt').textContent = elements[i].text + ' ✅';
+    } else {
+      row.classList.add('incorrect');
+      row.querySelector('.txt').textContent = elements[i].text + ' ❌ (→ N' + elements[i].niveau + ')';
+    }
+  });
+
+  // Afficher le corrigé
+  afficherCorrige();
+}
+
+function afficherCorrige() {
+  [1, 2, 3].forEach(n => {
+    const ul = document.getElementById('corr-n' + n);
+    ul.innerHTML = '';
+    elements.filter(el => el.niveau === n).forEach(el => {
+      const li = document.createElement('li');
+      li.textContent = el.text;
+      ul.appendChild(li);
+    });
+  });
+  document.getElementById('corrige-zone').style.display = 'block';
+}
+
+// ===== RÉINIT =====
+function reinitialiser() {
+  Object.keys(placements).forEach(k => delete placements[k]);
+  selectedIndex = null;
+  document.getElementById('score-zone').style.display = 'none';
+  document.getElementById('corrige-zone').style.display = 'none';
+  document.getElementById('choix-niveau').style.display = 'none';
+  renderItems();
+  renderColumns();
+}
+
+// ===== DÉMARRAGE =====
+renderItems();
+renderColumns();
+</script>
+</body>
+</html>
