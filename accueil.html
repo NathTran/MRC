@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Me connaître pour mieux m'orienter — 2de MRC</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f0f4f8; color: #1a1a1a; padding: 20px; max-width: 860px; margin: 0 auto; }
+
+    .header { background: linear-gradient(135deg, #1a3c6e, #4a7fc1); color: #fff; border-radius: 14px; padding: 24px 28px; margin-bottom: 24px; text-align: center; }
+    .header h1 { font-size: 1.5em; margin-bottom: 6px; }
+    .header p  { font-size: 0.88em; opacity: 0.9; line-height: 1.6; }
+
+    .info-eleve { display: flex; flex-wrap: wrap; gap: 12px; background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 12px 18px; margin-bottom: 24px; }
+    .info-eleve label { display: flex; align-items: center; gap: 7px; font-size: 0.83em; color: #555; }
+    .info-eleve input { border: none; border-bottom: 1.5px solid #aaa; outline: none; font-size: 0.83em; width: 160px; padding: 2px 4px; background: transparent; }
+    .info-save { display: block; width: 100%; text-align: right; }
+    .btn-save { background: #1a3c6e; color: #fff; border: none; border-radius: 20px; padding: 6px 16px; font-size: 0.8em; cursor: pointer; margin-top: 8px; }
+    .btn-save:hover { background: #0f2a52; }
+
+    /* PROGRESSION GLOBALE */
+    .prog-global { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 14px 18px; margin-bottom: 24px; }
+    .prog-titre { font-size: 0.88em; font-weight: bold; color: #1a3c6e; margin-bottom: 10px; }
+    .prog-steps { display: flex; gap: 0; }
+    .step { flex: 1; text-align: center; position: relative; }
+    .step:not(:last-child)::after { content: ''; position: absolute; top: 18px; right: -1px; width: 100%; height: 3px; background: #e0e0e0; z-index: 0; }
+    .step.done:not(:last-child)::after { background: #27ae60; }
+    .step-circle { width: 36px; height: 36px; border-radius: 50%; border: 3px solid #e0e0e0; background: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; font-size: 1em; position: relative; z-index: 1; font-weight: bold; color: #aaa; transition: all 0.3s; }
+    .step.done .step-circle { border-color: #27ae60; background: #27ae60; color: #fff; }
+    .step.current .step-circle { border-color: #1a3c6e; color: #1a3c6e; }
+    .step-label { font-size: 0.72em; color: #777; line-height: 1.3; }
+    .step.done .step-label { color: #27ae60; font-weight: bold; }
+    .step.current .step-label { color: #1a3c6e; font-weight: bold; }
+
+    /* CARTES TESTS */
+    .tests-grid { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+    .test-card { background: #fff; border: 1.5px solid #ddd; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; transition: border-color 0.2s, box-shadow 0.2s; }
+    .test-card.done { border-color: #27ae60; background: #f8fff8; }
+    .test-card.current { border-color: #1a3c6e; box-shadow: 0 2px 12px rgba(26,60,110,0.12); }
+    .test-card.locked { opacity: 0.5; }
+    .test-num { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3em; flex-shrink: 0; border: 2px solid #ddd; background: #f5f5f5; }
+    .test-card.done .test-num { background: #27ae60; border-color: #27ae60; }
+    .test-card.current .test-num { background: #1a3c6e; border-color: #1a3c6e; }
+    .test-info { flex: 1; }
+    .test-titre { font-size: 0.95em; font-weight: bold; color: #1a3c6e; margin-bottom: 3px; }
+    .test-card.done .test-titre { color: #1e8449; }
+    .test-desc { font-size: 0.81em; color: #666; line-height: 1.5; margin-bottom: 6px; }
+    .test-duree { font-size: 0.75em; color: #aaa; }
+    .test-status { font-size: 0.78em; font-weight: bold; flex-shrink: 0; }
+    .status-done    { color: #27ae60; }
+    .status-current { color: #1a3c6e; }
+    .status-locked  { color: #aaa; }
+
+    .btn-test { padding: 9px 20px; border-radius: 24px; border: none; cursor: pointer; font-size: 0.86em; font-weight: bold; flex-shrink: 0; text-decoration: none; display: inline-block; }
+    .btn-lancer { background: #1a3c6e; color: #fff; }
+    .btn-refaire { background: #e9ecef; color: #333; border: 1px solid #ccc; }
+    .btn-locked { background: #e9ecef; color: #aaa; cursor: not-allowed; }
+    .btn-test:hover:not(.btn-locked) { opacity: 0.85; }
+
+    /* RÉSULTAT RAPIDE PAR TEST */
+    .res-rapide { font-size: 0.78em; background: #f0f9f4; border: 1px solid #a9dfbf; border-radius: 6px; padding: 4px 10px; margin-top: 5px; color: #1e8449; display: none; }
+    .test-card.done .res-rapide { display: block; }
+
+    /* BOUTON BILAN */
+    .bilan-wrap { text-align: center; margin-bottom: 30px; }
+    .btn-bilan { display: inline-block; padding: 14px 32px; border-radius: 30px; background: #6c3fc5; color: #fff; border: none; cursor: pointer; font-size: 1em; font-weight: bold; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+    .btn-bilan:hover { background: #5a32a3; transform: translateY(-1px); }
+    .btn-bilan.locked { background: #ccc; cursor: not-allowed; transform: none; }
+    .bilan-hint { font-size: 0.8em; color: #aaa; margin-top: 8px; }
+
+    .note { background: #fff8e1; border: 1px solid #f1c40f; border-radius: 8px; padding: 10px 14px; font-size: 0.81em; color: #7d6608; line-height: 1.6; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Me connaître pour mieux m'orienter</h1>
+  <p>4 tests pour explorer ta confiance en toi, ton profil MRC et tes points forts<br>
+  MME TRAN · 2de MRC · Complète les 4 tests dans l'ordre pour accéder à ta fiche bilan</p>
+</div>
+
+<div class="info-eleve">
+  <label>Nom : <input type="text" id="nom" placeholder="………………………"></label>
+  <label>Prénom : <input type="text" id="prenom" placeholder="………………………"></label>
+  <label>Classe : <input type="text" id="classe" placeholder="2de MRC"></label>
+  <label>Date : <input type="text" id="date" placeholder="………………………"></label>
+  <div class="info-save"><button class="btn-save" onclick="sauvegarderInfos()">Enregistrer mes infos</button></div>
+</div>
+
+<!-- PROGRESSION -->
+<div class="prog-global">
+  <div class="prog-titre">Ma progression</div>
+  <div class="prog-steps" id="prog-steps">
+    <div class="step" id="step-0"><div class="step-circle">1</div><div class="step-label">Test<br>Fanget</div></div>
+    <div class="step" id="step-1"><div class="step-circle">2</div><div class="step-label">Test<br>Nathan</div></div>
+    <div class="step" id="step-2"><div class="step-circle">3</div><div class="step-label">Soft<br>Skills</div></div>
+    <div class="step" id="step-3"><div class="step-circle">4</div><div class="step-label">Classe<br>ment</div></div>
+    <div class="step" id="step-4"><div class="step-circle">🏁</div><div class="step-label">Mon<br>Bilan</div></div>
+  </div>
+</div>
+
+<div class="note">
+  💡 <strong>Comment ça marche :</strong> Complète les 4 tests dans l'ordre. Tes résultats sont sauvegardés automatiquement à la fin de chaque test. Une fois les 4 terminés, accède à ta fiche bilan personnalisée.
+</div>
+
+<!-- TESTS -->
+<div class="tests-grid">
+
+  <div class="test-card" id="card-0">
+    <div class="test-num" id="num-0">🧠</div>
+    <div class="test-info">
+      <div class="test-titre">Test 1 — Ma confiance en soi (Fanget)</div>
+      <div class="test-desc">20 affirmations sur ta vie de tous les jours. Tu obtiens un score global et 3 sous-scores qui révèlent tes forces et ce que tu dois travailler.</div>
+      <div class="test-duree">⏱ Environ 10 min</div>
+      <div class="res-rapide" id="res-0"></div>
+    </div>
+    <a href="test_confiance_fanget_v2.html" class="btn-test btn-lancer" id="btn-0">Commencer →</a>
+  </div>
+
+  <div class="test-card locked" id="card-1">
+    <div class="test-num" id="num-1">🏪</div>
+    <div class="test-info">
+      <div class="test-titre">Test 2 — Mon profil métier MRC (Nathan)</div>
+      <div class="test-desc">33 affirmations pour découvrir si tu as un profil Accueil, Commerce ou Vente. Des pistes de réflexion personnalisées selon ton résultat.</div>
+      <div class="test-duree">⏱ Environ 10 min</div>
+      <div class="res-rapide" id="res-1"></div>
+    </div>
+    <span class="btn-test btn-locked" id="btn-1">🔒 Terminer le test 1</span>
+  </div>
+
+  <div class="test-card locked" id="card-2">
+    <div class="test-num" id="num-2">💡</div>
+    <div class="test-info">
+      <div class="test-titre">Test 3 — Mes soft skills</div>
+      <div class="test-desc">18 soft skills explorés à travers 54 situations concrètes de ta vie. Tu découvres tes points forts naturels et ce que tu peux encore développer.</div>
+      <div class="test-duree">⏱ Environ 20 min</div>
+      <div class="res-rapide" id="res-2"></div>
+    </div>
+    <span class="btn-test btn-locked" id="btn-2">🔒 Terminer le test 2</span>
+  </div>
+
+  <div class="test-card locked" id="card-3">
+    <div class="test-num" id="num-3">📊</div>
+    <div class="test-info">
+      <div class="test-titre">Test 4 — Classer les niveaux de confiance</div>
+      <div class="test-desc">Un exercice interactif pour classer des situations dans les 3 niveaux de confiance en soi. Tu vérifies ce que tu as compris et tu approfondis ta réflexion.</div>
+      <div class="test-duree">⏱ Environ 10 min</div>
+      <div class="res-rapide" id="res-3"></div>
+    </div>
+    <span class="btn-test btn-locked" id="btn-3">🔒 Terminer le test 3</span>
+  </div>
+
+</div>
+
+<!-- BILAN FINAL -->
+<div class="bilan-wrap">
+  <a href="bilan_final.html" class="btn-bilan locked" id="btn-bilan">
+    🎯 Accéder à ma fiche bilan personnalisée
+  </a>
+  <div class="bilan-hint" id="hint-bilan">Complète les 4 tests pour débloquer ta fiche bilan</div>
+</div>
+
+<script>
+const TESTS = ['fanget','nathan','softskills','classement'];
+const FICHIERS = [
+  'test_confiance_fanget_v2.html',
+  'test_profil_metier_MRC_v2.html',
+  'test_softskills_complet.html',
+  'confianceclassement_v2.html'
+];
+
+function sauvegarderInfos() {
+  const infos = {
+    nom: document.getElementById('nom').value,
+    prenom: document.getElementById('prenom').value,
+    classe: document.getElementById('classe').value,
+    date: document.getElementById('date').value,
+  };
+  localStorage.setItem('mrc_infos', JSON.stringify(infos));
+  alert('Tes informations sont enregistrées !');
+}
+
+function chargerInfos() {
+  try {
+    const infos = JSON.parse(localStorage.getItem('mrc_infos') || '{}');
+    if (infos.nom)    document.getElementById('nom').value    = infos.nom;
+    if (infos.prenom) document.getElementById('prenom').value = infos.prenom;
+    if (infos.classe) document.getElementById('classe').value = infos.classe;
+    if (infos.date)   document.getElementById('date').value   = infos.date;
+  } catch(e) {}
+}
+
+function updateUI() {
+  const done = TESTS.map(t => !!localStorage.getItem('mrc_result_'+t));
+  const nbDone = done.filter(Boolean).length;
+
+  // Étapes de progression
+  done.forEach((d, i) => {
+    const step = document.getElementById('step-'+i);
+    step.className = 'step' + (d ? ' done' : i===nbDone ? ' current' : '');
+  });
+  const stepBilan = document.getElementById('step-4');
+  stepBilan.className = 'step' + (nbDone===4 ? ' done' : '');
+
+  // Cartes tests
+  done.forEach((d, i) => {
+    const card  = document.getElementById('card-'+i);
+    const btn   = document.getElementById('btn-'+i);
+    const num   = document.getElementById('num-'+i);
+    const res   = document.getElementById('res-'+i);
+
+    if (d) {
+      card.className = 'test-card done';
+      btn.className  = 'btn-test btn-refaire';
+      btn.textContent = '↺ Refaire';
+      if (btn.tagName === 'SPAN') {
+        const a = document.createElement('a');
+        a.href = FICHIERS[i];
+        a.className = 'btn-test btn-refaire';
+        a.textContent = '↺ Refaire';
+        btn.parentNode.replaceChild(a, btn);
+      } else {
+        btn.href = FICHIERS[i];
+      }
+      // Afficher résultat rapide
+      try {
+        const r = JSON.parse(localStorage.getItem('mrc_result_'+TESTS[i]) || '{}');
+        if (r.resume) { res.textContent = '✓ ' + r.resume; res.style.display = 'block'; }
+      } catch(e) {}
+
+    } else if (i === nbDone) {
+      // Test courant
+      card.className = 'test-card current';
+      if (btn.tagName === 'SPAN') {
+        const a = document.createElement('a');
+        a.href = FICHIERS[i];
+        a.className = 'btn-test btn-lancer';
+        a.textContent = 'Commencer →';
+        btn.parentNode.replaceChild(a, btn);
+      }
+    } else if (i > nbDone) {
+      card.className = 'test-card locked';
+      if (btn.tagName === 'A') {
+        const s = document.createElement('span');
+        s.className = 'btn-test btn-locked';
+        s.id = 'btn-'+i;
+        s.textContent = '🔒 Terminer le test ' + i;
+        btn.parentNode.replaceChild(s, btn);
+      }
+    }
+  });
+
+  // Bouton bilan
+  const btnBilan = document.getElementById('btn-bilan');
+  const hint     = document.getElementById('hint-bilan');
+  if (nbDone === 4) {
+    btnBilan.className = 'btn-bilan';
+    hint.textContent = '🎉 Tous les tests sont terminés !';
+  } else {
+    btnBilan.className = 'btn-bilan locked';
+    btnBilan.removeAttribute('href');
+    hint.textContent = nbDone + '/4 tests complétés — encore ' + (4-nbDone) + ' pour débloquer ta fiche bilan';
+  }
+}
+
+chargerInfos();
+updateUI();
+</script>
+</body>
+</html>

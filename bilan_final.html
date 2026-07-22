@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ma fiche bilan — 2de MRC</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f0f4f8; color: #1a1a1a; padding: 20px; max-width: 900px; margin: 0 auto; }
+
+    .header { background: linear-gradient(135deg, #5b2c8f, #9b59b6); color: #fff; border-radius: 14px; padding: 22px 28px; margin-bottom: 22px; }
+    .header h1 { font-size: 1.4em; margin-bottom: 5px; }
+    .header p  { font-size: 0.85em; opacity: 0.9; }
+
+    .identite { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 0.86em; }
+    .identite span { color: #333; } .identite strong { color: #5b2c8f; }
+
+    /* BLOC RÉSULTATS */
+    .resultats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    @media(max-width:600px) { .resultats-grid { grid-template-columns: 1fr; } }
+    .res-bloc { border-radius: 10px; padding: 14px 18px; border: 1.5px solid #ddd; background: #fff; }
+    .res-bloc h2 { font-size: 0.88em; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .res-bloc .val { font-size: 1.4em; font-weight: bold; margin-bottom: 4px; }
+    .res-bloc .detail { font-size: 0.8em; color: #666; line-height: 1.5; }
+    .rb-fanget  { border-color: #1a5276; } .rb-fanget h2  { color: #1a5276; }
+    .rb-nathan  { border-color: #1e8449; } .rb-nathan h2  { color: #1e8449; }
+    .rb-ss      { border-color: #784212; } .rb-ss h2      { color: #784212; }
+    .rb-class   { border-color: #6c3fc5; } .rb-class h2   { color: #6c3fc5; }
+
+    /* SYNTHÈSE CROISÉE */
+    .synthese { background: linear-gradient(135deg, #f0eaff, #eaf4fb); border: 1.5px solid #9b59b6; border-radius: 12px; padding: 18px 22px; margin-bottom: 20px; }
+    .synthese h2 { color: #5b2c8f; font-size: 1em; margin-bottom: 14px; }
+    .synthese-portrait { font-size: 0.9em; line-height: 1.8; color: #333; margin-bottom: 14px; background: #fff; border-radius: 8px; padding: 12px 16px; border-left: 4px solid #9b59b6; }
+    .synthese-pistes { margin-top: 10px; }
+    .synthese-pistes h3 { font-size: 0.85em; font-weight: bold; color: #5b2c8f; margin-bottom: 8px; }
+    .piste { font-size: 0.83em; line-height: 1.6; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; }
+    .piste-fort { background: #d5f5e3; color: #1e6e3a; }
+    .piste-dev  { background: #fadbd8; color: #922b21; }
+    .piste-stage { background: #d6eaf8; color: #1a5276; }
+
+    /* PILLS */
+    .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .pill { border-radius: 20px; padding: 3px 11px; font-size: 0.78em; font-weight: bold; }
+    .pill-g { background: #d5f5e3; color: #1e6e3a; border: 1px solid #a9dfbf; }
+    .pill-r { background: #fadbd8; color: #922b21; border: 1px solid #f1a9a0; }
+    .pill-b { background: #d6eaf8; color: #1a5276; border: 1px solid #aed6f1; }
+
+    /* RÉFLEXION PERSONNELLE */
+    .reflexion { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; }
+    .reflexion h2 { color: #5b2c8f; font-size: 0.95em; margin-bottom: 14px; }
+    .rq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media(max-width:600px) { .rq-grid { grid-template-columns: 1fr; } }
+    .rq-item h3 { font-size: 0.82em; font-weight: bold; margin-bottom: 6px; padding: 5px 10px; border-radius: 6px; }
+    .rq-vert  { background: #d5f5e3; color: #1e6e3a; }
+    .rq-rouge { background: #fadbd8; color: #922b21; }
+    .rq-bleu  { background: #d6eaf8; color: #1a5276; }
+    .rq-jaune { background: #fef9e7; color: #9a7d0a; }
+    .rq-violet{ background: #f0eaff; color: #5b2c8f; }
+    textarea { width: 100%; height: 68px; font-size: 0.83em; border: 1px solid #ddd; border-radius: 6px; padding: 7px; resize: none; font-family: Arial, sans-serif; line-height: 1.5; }
+    .rq-full { grid-column: 1 / -1; }
+
+    /* AVATAR */
+    .avatar-wrap { background: #f0f4ff; border: 1.5px dashed #5b8dd9; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; text-align: center; }
+    .avatar-wrap h2 { color: #1a3c6e; font-size: 0.95em; margin-bottom: 6px; }
+    .avatar-wrap p  { font-size: 0.82em; color: #555; margin-bottom: 10px; }
+    .av-links { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .av-link { display: inline-block; color: #fff; border-radius: 20px; padding: 7px 16px; font-size: 0.82em; font-weight: bold; text-decoration: none; }
+    .av-canva  { background: #00c4cc; }
+    .av-picrew { background: #e74c3c; }
+
+    /* BOUTONS */
+    .bottom-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 20px 0 30px; }
+    .btn { padding: 9px 22px; border-radius: 24px; border: none; cursor: pointer; font-size: 0.86em; font-weight: bold; text-decoration: none; display: inline-block; }
+    .btn:hover { opacity: 0.85; }
+    .btn-retour { background: #e9ecef; color: #333; border: 1px solid #ccc; }
+    .btn-print  { background: #27ae60; color: #fff; }
+
+    /* ALERTE données manquantes */
+    .alerte { background: #fff8e1; border: 1.5px solid #f1c40f; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; font-size: 0.85em; color: #7d6608; line-height: 1.6; }
+    .alerte a { color: #5b2c8f; font-weight: bold; }
+
+    @media print {
+      body { background: #fff; padding: 8px; }
+      .bottom-btns, .avatar-wrap .av-links { display: none !important; }
+      .header, .synthese, .reflexion, .resultats-grid, .res-bloc { break-inside: avoid; }
+      .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎯 Ma fiche bilan — Portrait professionnel</h1>
+  <p id="header-id">Synthèse des 4 tests · MME TRAN · 2de MRC</p>
+</div>
+
+<div class="identite" id="identite"></div>
+<div class="alerte" id="alerte" style="display:none"></div>
+
+<!-- RÉSULTATS DES 4 TESTS -->
+<div class="resultats-grid">
+  <div class="res-bloc rb-fanget">
+    <h2>🧠 Test 1 — Confiance en soi (Fanget)</h2>
+    <div class="val" id="val-fanget">—</div>
+    <div class="detail" id="detail-fanget"></div>
+  </div>
+  <div class="res-bloc rb-nathan">
+    <h2>🏪 Test 2 — Profil métier MRC (Nathan)</h2>
+    <div class="val" id="val-nathan">—</div>
+    <div class="detail" id="detail-nathan"></div>
+  </div>
+  <div class="res-bloc rb-ss">
+    <h2>💡 Test 3 — Mes soft skills</h2>
+    <div id="val-ss"></div>
+    <div class="detail" id="detail-ss"></div>
+  </div>
+  <div class="res-bloc rb-class">
+    <h2>📊 Test 4 — Classement des niveaux</h2>
+    <div class="val" id="val-class">—</div>
+    <div class="detail" id="detail-class"></div>
+  </div>
+</div>
+
+<!-- SYNTHÈSE CROISÉE -->
+<div class="synthese">
+  <h2>✨ Mon portrait professionnel — synthèse croisée des 4 tests</h2>
+  <div class="synthese-portrait" id="portrait"></div>
+  <div class="synthese-pistes" id="pistes"></div>
+</div>
+
+<!-- RÉFLEXION PERSONNELLE -->
+<div class="reflexion">
+  <h2>✏️ Ma réflexion personnelle</h2>
+  <div class="rq-grid">
+    <div class="rq-item">
+      <h3 class="rq-vert">Ce que j'ai appris sur moi que je ne savais pas avant</h3>
+      <textarea placeholder="Ex : Je pensais être timide mais le test montre que mon sens du contact est fort…"></textarea>
+    </div>
+    <div class="rq-item">
+      <h3 class="rq-rouge">Ce que je dois travailler en priorité avant mon stage</h3>
+      <textarea placeholder="Ex : Ma gestion du stress et mon affirmation de soi (sous-score B Fanget)…"></textarea>
+    </div>
+    <div class="rq-item">
+      <h3 class="rq-bleu">Le métier ou l'enseigne que je cible pour mon stage — pourquoi ?</h3>
+      <textarea placeholder="Ex : Je vise un stage chez Intersport parce que mon profil Commerce + mon soft skill sens du contact…"></textarea>
+    </div>
+    <div class="rq-item">
+      <h3 class="rq-jaune">Ce qui me surprend dans mes résultats</h3>
+      <textarea placeholder="Ex : Je ne pensais pas avoir un profil Vente, mais en y réfléchissant je comprends pourquoi…"></textarea>
+    </div>
+    <div class="rq-item rq-full">
+      <h3 class="rq-violet">En 3 lignes — Qui je suis professionnellement aujourd'hui</h3>
+      <textarea style="height:75px" placeholder="Je suis quelqu'un qui… Mon point fort c'est… Ce que je vais développer c'est… Mon projet de stage c'est…"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- AVATAR -->
+<div class="avatar-wrap">
+  <h2>Mon avatar professionnel</h2>
+  <p>Crée ton avatar et colle-le dans ta fiche pour la personnaliser !</p>
+  <div class="av-links">
+    <a href="https://www.canva.com" target="_blank" class="av-link av-canva">🎨 Canva</a>
+    <a href="https://www.picrew.me"  target="_blank" class="av-link av-picrew">🧑 Picrew</a>
+  </div>
+</div>
+
+<div class="bottom-btns">
+  <a href="accueil.html" class="btn btn-retour">← Retour à l'accueil</a>
+  <button class="btn btn-print" onclick="window.print()">Imprimer ma fiche bilan</button>
+</div>
+
+<script>
+// ── LECTURE DES DONNÉES ──────────────────────────────
+function get(key) {
+  try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch(e) { return null; }
+}
+
+const infos   = get('mrc_infos')        || {};
+const fanget  = get('mrc_result_fanget') || null;
+const nathan  = get('mrc_result_nathan') || null;
+const ss      = get('mrc_result_softskills') || null;
+const classem = get('mrc_result_classement') || null;
+
+// ── IDENTITÉ ──────────────────────────────────────────
+const identDiv = document.getElementById('identite');
+const nom    = infos.prenom ? infos.prenom + ' ' + (infos.nom||'') : '—';
+identDiv.innerHTML = `
+  <span><strong>Nom :</strong> ${infos.nom||'—'}</span>
+  <span><strong>Prénom :</strong> ${infos.prenom||'—'}</span>
+  <span><strong>Classe :</strong> ${infos.classe||'—'}</span>
+  <span><strong>Date :</strong> ${infos.date||'—'}</span>
+`;
+document.getElementById('header-id').textContent =
+  'Synthèse des 4 tests · MME TRAN · ' + (infos.classe||'2de MRC');
+
+// ── VÉRIFIER LES DONNÉES MANQUANTES ──────────────────
+const manquants = [];
+if (!fanget)  manquants.push('<a href="test_confiance_fanget_v2.html">Test Fanget</a>');
+if (!nathan)  manquants.push('<a href="test_profil_metier_MRC_v2.html">Test Nathan</a>');
+if (!ss)      manquants.push('<a href="test_softskills_complet.html">Soft Skills</a>');
+if (!classem) manquants.push('<a href="confianceclassement_v2.html">Classement</a>');
+if (manquants.length > 0) {
+  const a = document.getElementById('alerte');
+  a.style.display = 'block';
+  a.innerHTML = '⚠️ Certains tests ne sont pas encore terminés : ' + manquants.join(', ') +
+    '. La synthèse sera incomplète. <a href="accueil.html">Retour à l\'accueil</a>';
+}
+
+// ── BLOC FANGET ──────────────────────────────────────
+if (fanget) {
+  document.getElementById('val-fanget').textContent = fanget.total + ' / 80 — ' + fanget.niveau;
+  document.getElementById('detail-fanget').innerHTML =
+    'Sous-score A (actes) : ' + fanget.sA + '/40 · ' +
+    'Sous-score B (affirmation) : ' + fanget.sB + '/20 · ' +
+    'Sous-score C (estime) : ' + fanget.sC + '/20<br>' +
+    '<em>' + fanget.signif + '</em>';
+}
+
+// ── BLOC NATHAN ──────────────────────────────────────
+if (nathan) {
+  document.getElementById('val-nathan').textContent = 'Profil ' + nathan.profil;
+  document.getElementById('detail-nathan').innerHTML =
+    'Accueil : ' + nathan.acc + '/66 · Commerce : ' + nathan.com + '/66 · Vente : ' + nathan.ven + '/66';
+}
+
+// ── BLOC SOFT SKILLS ─────────────────────────────────
+if (ss) {
+  const valSS = document.getElementById('val-ss');
+  valSS.innerHTML = '<div class="pills">' +
+    (ss.top3||[]).map(s => `<span class="pill pill-g">${s}</span>`).join('') +
+    '</div>';
+  const devText = (ss.adev||[]).length > 0
+    ? 'À développer : ' + (ss.adev||[]).join(', ')
+    : 'Tous les soft skills sont satisfaisants !';
+  document.getElementById('detail-ss').innerHTML = '<div class="pills" style="margin-top:6px">' +
+    (ss.adev||[]).map(s=>`<span class="pill pill-r">${s}</span>`).join('') + '</div>' +
+    (ss.adev&&ss.adev.length>0 ? '<div style="font-size:0.78em;color:#922b21;margin-top:4px">À développer</div>' : '');
+}
+
+// ── BLOC CLASSEMENT ───────────────────────────────────
+if (classem) {
+  const pct = Math.round(classem.score / classem.total * 100);
+  document.getElementById('val-class').textContent = classem.score + '/' + classem.total + ' — ' + pct + '%';
+  document.getElementById('detail-class').textContent =
+    classem.incorrect + ' mal classés · ' + classem.nonClasses + ' non classés';
+}
+
+// ── SYNTHÈSE CROISÉE ─────────────────────────────────
+function genPortrait() {
+  let portrait = '';
+  const prenom = infos.prenom || 'Tu';
+
+  // Confiance
+  if (fanget) {
+    const niv = fanget.total;
+    if (niv >= 60)
+      portrait += `${prenom} dispose d'une <strong>confiance en soi solide</strong> (${fanget.total}/80). `;
+    else if (niv >= 40)
+      portrait += `${prenom} a une <strong>confiance en soi globalement satisfaisante</strong> (${fanget.total}/80), avec des points à renforcer. `;
+    else
+      portrait += `${prenom} est en train de <strong>construire sa confiance en soi</strong> (${fanget.total}/80) — c'est normal en début de formation. `;
+  }
+
+  // Profil métier
+  if (nathan) {
+    const p = nathan.profil;
+    const descs = {
+      Accueil:  "un attrait pour l'accueil des personnes, l'organisation et le travail en équipe structurée",
+      Commerce: "un attrait pour la mise en valeur des produits, l'animation commerciale et le sens du détail",
+      Vente:    "un attrait pour le défi commercial, la persuasion et le travail en autonomie",
+    };
+    const desc = descs[p] || 'un profil mixte qui combine plusieurs univers MRC';
+    portrait += `Son profil métier révèle <strong>${desc}</strong>. `;
+  }
+
+  // Soft skills
+  if (ss && ss.top3 && ss.top3.length > 0) {
+    portrait += `Ses points forts naturels sont <strong>${ss.top3.slice(0,3).join(', ')}</strong>. `;
+    if (ss.adev && ss.adev.length > 0) {
+      portrait += `Les compétences à développer prioritairement sont : <strong>${ss.adev.slice(0,3).join(', ')}</strong>. `;
+    }
+  }
+
+  // Cohérence entre profil et soft skills
+  if (nathan && ss && ss.top3) {
+    const p = nathan.profil;
+    const ssStr = ss.top3.join(' ').toLowerCase();
+    if (p==='Accueil' && (ssStr.includes('écoute') || ssStr.includes('empathie') || ssStr.includes('organisation')))
+      portrait += `Cette combinaison profil Accueil + compétences relationnelles est <strong>particulièrement cohérente</strong>. `;
+    else if (p==='Commerce' && (ssStr.includes('créativité') || ssStr.includes('organisation') || ssStr.includes('rigueur')))
+      portrait += `Cette combinaison profil Commerce + sens de l'organisation est <strong>un atout réel</strong>. `;
+    else if (p==='Vente' && (ssStr.includes('initiative') || ssStr.includes('communication') || ssStr.includes('persévérance')))
+      portrait += `Cette combinaison profil Vente + prise d'initiative est <strong>une base solide</strong>. `;
+  }
+
+  if (!portrait) portrait = 'Complète les tests pour générer ton portrait automatique.';
+  document.getElementById('portrait').innerHTML = portrait;
+}
+
+function genPistes() {
+  const zone = document.getElementById('pistes');
+  let html = '<h3>Ce que ça implique concrètement pour toi :</h3>';
+
+  if (fanget) {
+    const ssB = fanget.sB || 0;
+    const ssA = fanget.sA || 0;
+    const ssC = fanget.sC || 0;
+    if (ssB < 10)
+      html += `<div class="piste piste-dev">💪 Ton affirmation de soi (${ssB}/20) est à travailler : apprends à dire non, à prendre la parole en groupe et à défendre ton point de vue calmement.</div>`;
+    if (ssA < 20)
+      html += `<div class="piste piste-dev">💪 Ta confiance en tes actes (${ssA}/40) est à renforcer : commence par de petits défis réussis et rappelle-toi ce que tu as déjà accompli.</div>`;
+    if (ssC < 10)
+      html += `<div class="piste piste-dev">💪 Ton estime de toi (${ssC}/20) est le premier niveau à reconstruire : essaie de noter chaque soir une chose que tu as bien faite.</div>`;
+  }
+
+  if (ss && ss.forts && ss.forts.length > 0)
+    html += `<div class="piste piste-fort">✅ Tes soft skills forts (${ss.forts.slice(0,3).join(', ')}) sont des atouts directs pour le secteur MRC — mise dessus en entretien de stage.</div>`;
+
+  if (nathan) {
+    const stages = {
+      Accueil:  'Cherche un stage dans un environnement avec flux de clients et rôles bien définis (centre commercial, grande surface, services).',
+      Commerce: 'Cherche un stage dans une enseigne dont l\'univers produit t\'attire — tu apprendras mieux si le secteur te passionne.',
+      Vente:    'Cherche un stage avec du contact client actif, de la proposition commerciale et idéalement des objectifs à atteindre.',
+    };
+    const conseil = stages[nathan.profil] || 'Choisis ton stage en fonction de ce qui te motive le plus parmi les 3 profils.';
+    html += `<div class="piste piste-stage">🎒 Pour ton stage : ${conseil}</div>`;
+  }
+
+  if (classem && classem.score < classem.total * 0.7)
+    html += `<div class="piste piste-dev">📖 Ton exercice de classement (${classem.score}/${classem.total}) montre que les 3 niveaux de confiance ne sont pas encore bien mémorisés — relis tes notes de cours.</div>`;
+
+  zone.innerHTML = html;
+}
+
+genPortrait();
+genPistes();
+</script>
+</body>
+</html>

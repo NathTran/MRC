@@ -462,7 +462,23 @@ function calculer() {
     });
   }
 
-  document.getElementById('resultat').style.display='block';
+
+  // ── SAUVEGARDE POUR LA PAGE BILAN ──
+  const niveau = total>=60?'Excellente':total>=40?'Satisfaisante':total>=20?'Défaillante':'Mauvaise';
+  const ssMax = Math.max(sA/40, sB/20, sC/20);
+  const ssNom = sA/40===ssMax&&sA/40<0.5?'Confiance en tes actes (A)':sB/20===ssMax&&sB/20<0.5?'Affirmation de soi (B)':sC/20<0.5?'Estime de toi (C)':'Tous satisfaisants';
+  try {
+    localStorage.setItem('mrc_result_fanget', JSON.stringify({
+      total: total,
+      max: 80,
+      niveau: niveau,
+      sA: sA, sB: sB, sC: sC,
+      signif: res.signif,
+      resume: 'Confiance ' + niveau.toLowerCase() + ' — ' + total + '/80'
+    }));
+  } catch(e) {}
+
+    document.getElementById('resultat').style.display='block';
   document.getElementById('btn-val').style.display='none';
   document.getElementById('resultat').scrollIntoView({behavior:'smooth'});
 }

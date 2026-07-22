@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Se connaître pour choisir son métier — MRC</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f5f6fa; color: #1a1a1a; padding: 20px; }
+
+    .header { background: linear-gradient(135deg, #6c3fc5, #9b59b6); color: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; }
+    .header h1 { font-size: 1.25em; margin-bottom: 6px; }
+    .header p  { font-size: 0.83em; opacity: 0.9; line-height: 1.5; }
+
+    .info-eleve { display: flex; flex-wrap: wrap; gap: 12px; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 11px 16px; margin-bottom: 16px; }
+    .info-eleve label { display: flex; align-items: center; gap: 6px; font-size: 0.83em; color: #555; }
+    .info-eleve input { border: none; border-bottom: 1.5px solid #aaa; outline: none; font-size: 0.83em; width: 150px; padding: 2px 4px; background: transparent; }
+
+    .consigne { background: #f0eaff; border-left: 4px solid #6c3fc5; border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 18px; font-size: 0.86em; line-height: 1.7; }
+    .consigne strong { color: #6c3fc5; }
+
+    .prog-wrap { background: #e0e0e0; border-radius: 20px; height: 7px; margin-bottom: 5px; overflow: hidden; }
+    .prog-fill  { background: #6c3fc5; height: 100%; border-radius: 20px; transition: width 0.3s; width: 0%; }
+    .prog-label { font-size: 0.77em; color: #666; margin-bottom: 16px; }
+
+    /* TABLEAU QUESTIONS */
+    .q-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; margin-bottom: 20px; }
+    .q-table thead th { padding: 10px 8px; font-size: 0.82em; text-align: center; font-weight: bold; }
+    .q-table thead th:first-child { text-align: left; padding-left: 14px; background: #6c3fc5; color: #fff; width: 58%; }
+    .q-table thead th:nth-child(2) { background: #27ae60; color: #fff; width: 14%; }
+    .q-table thead th:nth-child(3) { background: #e74c3c; color: #fff; width: 14%; }
+    .q-table thead th:nth-child(4) { background: #f39c12; color: #fff; width: 14%; }
+
+    .q-table tbody tr { border-bottom: 1px solid #eee; transition: background 0.1s; }
+    .q-table tbody tr:last-child { border-bottom: none; }
+    .q-table tbody tr:hover { background: #faf8ff; }
+    .q-table tbody tr.answered { background: #f0eaff; }
+    .q-table td { padding: 9px 8px; font-size: 0.84em; vertical-align: middle; }
+    .q-table td:first-child { padding-left: 14px; line-height: 1.45; }
+    .q-table td:not(:first-child) { text-align: center; }
+    .q-table input[type="radio"] { width: 18px; height: 18px; cursor: pointer; accent-color: #6c3fc5; }
+
+    .q-num { font-weight: bold; color: #6c3fc5; margin-right: 4px; }
+
+    /* BOUTON */
+    .btn-valider { display: block; width: 100%; max-width: 300px; margin: 0 auto 24px; padding: 12px 24px; border-radius: 30px; background: #6c3fc5; color: #fff; border: none; cursor: pointer; font-size: 0.95em; font-weight: bold; transition: background 0.2s, transform 0.1s; }
+    .btn-valider:hover:not(:disabled) { background: #5a32a3; transform: translateY(-1px); }
+    .btn-valider:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* RÉSULTAT */
+    #resultat { display: none; }
+
+    /* PODIUM DES SCORES */
+    .scores-wrap { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 18px 20px; margin-bottom: 18px; }
+    .scores-titre { font-size: 1em; font-weight: bold; color: #6c3fc5; margin-bottom: 14px; }
+    .scores-grid { display: flex; gap: 12px; flex-wrap: wrap; }
+    .score-card { flex: 1 1 28%; min-width: 160px; border-radius: 10px; padding: 14px 16px; text-align: center; }
+    .sc-accueil { background: #e8f8f5; border: 2px solid #27ae60; }
+    .sc-commerce { background: #eaf4fb; border: 2px solid #2980b9; }
+    .sc-vente    { background: #fef9e7; border: 2px solid #f39c12; }
+    .score-card h3 { font-size: 0.85em; font-weight: bold; margin-bottom: 6px; }
+    .sc-accueil h3 { color: #1e8449; }
+    .sc-commerce h3 { color: #1a5276; }
+    .sc-vente h3    { color: #9a7d0a; }
+    .score-val { font-size: 2em; font-weight: bold; margin-bottom: 4px; }
+    .sc-accueil .score-val { color: #1e8449; }
+    .sc-commerce .score-val { color: #1a5276; }
+    .sc-vente .score-val    { color: #9a7d0a; }
+    .score-max { font-size: 0.75em; color: #777; }
+    .winner-badge { display: inline-block; background: #6c3fc5; color: #fff; border-radius: 20px; font-size: 0.75em; font-weight: bold; padding: 2px 10px; margin-top: 6px; }
+
+    /* PROFIL DOMINANT */
+    .profil-card { border-radius: 12px; padding: 20px 24px; margin-bottom: 18px; }
+    .profil-accueil  { background: #e8f8f5; border: 2px solid #27ae60; }
+    .profil-commerce { background: #eaf4fb; border: 2px solid #2980b9; }
+    .profil-vente    { background: #fef9e7; border: 2px solid #f39c12; }
+    .profil-egal     { background: #f0eaff; border: 2px solid #6c3fc5; }
+    .profil-emoji { font-size: 2.5em; margin-bottom: 8px; }
+    .profil-titre { font-size: 1.1em; font-weight: bold; margin-bottom: 6px; }
+    .profil-accueil  .profil-titre { color: #1e8449; }
+    .profil-commerce .profil-titre { color: #1a5276; }
+    .profil-vente    .profil-titre { color: #9a7d0a; }
+    .profil-egal     .profil-titre { color: #6c3fc5; }
+    .profil-desc { font-size: 0.86em; line-height: 1.7; margin-bottom: 10px; }
+    .profil-metiers { font-size: 0.83em; }
+    .profil-metiers strong { display: block; margin-bottom: 4px; }
+    .metier-pill { display: inline-block; background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 3px 10px; font-size: 0.82em; margin: 2px; }
+
+    /* SOFT SKILLS */
+    .softskills-wrap { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 18px 20px; margin-bottom: 18px; }
+    .softskills-titre { font-size: 1em; font-weight: bold; color: #6c3fc5; margin-bottom: 6px; }
+    .softskills-sub { font-size: 0.82em; color: #666; margin-bottom: 14px; font-style: italic; }
+    .ss-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+    .ss-item { flex: 1 1 30%; min-width: 160px; background: #f5f6fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; }
+    .ss-item h4 { font-size: 0.82em; font-weight: bold; color: #6c3fc5; margin-bottom: 5px; }
+    .ss-chk { list-style: none; padding: 0; }
+    .ss-chk li { display: flex; align-items: flex-start; gap: 6px; font-size: 0.8em; margin-bottom: 5px; line-height: 1.4; }
+    .ss-chk input { margin-top: 2px; accent-color: #6c3fc5; flex-shrink: 0; }
+
+    /* FICHE BILAN */
+    .bilan-wrap { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 18px 20px; margin-bottom: 18px; }
+    .bilan-titre { font-size: 1em; font-weight: bold; color: #6c3fc5; margin-bottom: 14px; }
+    .bilan-grid { display: flex; gap: 14px; flex-wrap: wrap; }
+    .bilan-col { flex: 1 1 45%; min-width: 220px; }
+    .bilan-col h3 { font-size: 0.84em; font-weight: bold; margin-bottom: 8px; padding: 5px 10px; border-radius: 6px; }
+    .bh-vert  { background: #d5f5e3; color: #1e8449; }
+    .bh-rouge { background: #fadbd8; color: #922b21; }
+    .bh-bleu  { background: #d6eaf8; color: #1a5276; }
+    textarea.bilan-ta { width: 100%; height: 80px; font-size: 0.83em; border: 1px solid #ddd; border-radius: 6px; padding: 8px; resize: none; font-family: Arial, sans-serif; margin-top: 4px; }
+    .bilan-line { display: flex; align-items: flex-start; gap: 6px; font-size: 0.83em; margin-bottom: 6px; line-height: 1.5; }
+    .bilan-line input { margin-top: 3px; accent-color: #6c3fc5; flex-shrink: 0; }
+
+    /* BOUTONS BAS */
+    .bottom-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 20px 0 30px; }
+    .btn { padding: 9px 22px; border-radius: 24px; border: none; cursor: pointer; font-size: 0.86em; font-weight: bold; }
+    .btn:hover { opacity: 0.85; }
+    .btn-reinit { background: #e9ecef; color: #333; border: 1px solid #ccc; }
+    .btn-print  { background: #27ae60; color: #fff; }
+
+    /* PISTES DE RÉFLEXION */
+    .reflexion-wrap { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 16px 20px; margin-bottom: 16px; }
+    .reflexion-titre { font-size: 1em; font-weight: bold; color: #6c3fc5; margin-bottom: 14px; }
+    .reflexion-bloc { margin-bottom: 14px; padding: 12px 14px; border-radius: 8px; font-size: 0.85em; line-height: 1.7; }
+    .reflexion-bloc h3 { font-size: 0.88em; font-weight: bold; margin-bottom: 6px; }
+    .rb-valeurs { background: #f0eaff; border-left: 4px solid #6c3fc5; }
+    .rb-valeurs h3 { color: #5b2c8f; }
+    .rb-fonctionnement { background: #eaf4fb; border-left: 4px solid #2980b9; }
+    .rb-fonctionnement h3 { color: #1a5276; }
+    .rb-vigilance { background: #fdebd0; border-left: 4px solid #e67e22; }
+    .rb-vigilance h3 { color: #784212; }
+    .rb-stage { background: #eafaf1; border-left: 4px solid #27ae60; }
+    .rb-stage h3 { color: #1e8449; }
+
+    /* QUESTIONS RÉFLEXION */
+    .questions-wrap { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 16px 20px; margin-bottom: 16px; }
+    .questions-titre { font-size: 1em; font-weight: bold; color: #6c3fc5; margin-bottom: 4px; }
+    .questions-sub { font-size: 0.82em; color: #777; font-style: italic; margin-bottom: 14px; }
+    .q-reflexion { margin-bottom: 16px; }
+    .q-reflexion-txt { font-size: 0.88em; font-weight: bold; color: #333; margin-bottom: 6px; padding-left: 4px; border-left: 3px solid #6c3fc5; padding-left: 10px; }
+    .q-reflexion textarea { width: 100%; height: 65px; font-size: 0.83em; border: 1px solid #ddd; border-radius: 6px; padding: 7px; resize: none; font-family: Arial, sans-serif; line-height: 1.5; }
+
+    /* PRUDENCE */
+    .prudence-wrap { display: flex; gap: 14px; align-items: flex-start; background: #fff8e1; border: 1.5px solid #f1c40f; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; }
+    .prudence-icon { font-size: 1.8em; flex-shrink: 0; }
+    .prudence-txt { font-size: 0.84em; line-height: 1.7; color: #555; }
+    .prudence-txt strong { color: #9a7d0a; }
+
+    @media print {
+      body { background: #fff; padding: 8px; }
+      .btn-valider, .bottom-btns { display: none !important; }
+      #resultat { display: block !important; }
+      .q-table, .profil-card, .reflexion-wrap, .questions-wrap { break-inside: avoid; }
+      .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Se connaître pour choisir son métier</h1>
+  <p>Test d'orientation MRC — Accueil · Commerce · Vente<br>
+  Source : Nathan — La Relation Client, 2de Bac Pro MRC · 33 affirmations · MME TRAN · 2de MRC</p>
+</div>
+
+<div class="info-eleve">
+  <label>Nom : <input type="text" placeholder="………………………………"></label>
+  <label>Prénom : <input type="text" placeholder="………………………………"></label>
+  <label>Classe : <input type="text" placeholder="2de MRC"></label>
+  <label>Date : <input type="text" placeholder="………………………………"></label>
+</div>
+
+<div class="consigne">
+  <strong>Consigne :</strong> Pour chacune des 33 affirmations, coche la case qui correspond le mieux à ce que tu ressens.<br>
+  <strong>Oui (A)</strong> = c'est tout à fait moi &nbsp;·&nbsp;
+  <strong>Non (B)</strong> = ce n'est pas moi &nbsp;·&nbsp;
+  <strong>Ne sait pas (C)</strong> = je ne suis pas sûr(e)<br>
+  <em>Réponds spontanément — il n'y a pas de bonne ou mauvaise réponse.</em>
+</div>
+
+<div class="prog-wrap"><div class="prog-fill" id="prog-fill"></div></div>
+<div class="prog-label" id="prog-label">0 / 33 affirmations cochées</div>
+
+<div id="qzone"></div>
+<button class="btn-valider" id="btn-val" onclick="calculer()" disabled>Voir mon profil →</button>
+
+<!-- ===== RÉSULTAT ===== -->
+<div id="resultat">
+
+  <!-- Scores -->
+  <div class="scores-wrap">
+    <div class="scores-titre">Mes totaux par profil</div>
+    <div class="scores-grid">
+      <div class="score-card sc-accueil">
+        <h3>Accueil</h3>
+        <div class="score-val" id="sc-acc"></div>
+        <div class="score-max">/ 66 pts max</div>
+        <div id="badge-acc"></div>
+      </div>
+      <div class="score-card sc-commerce">
+        <h3>Commerce</h3>
+        <div class="score-val" id="sc-com"></div>
+        <div class="score-max">/ 66 pts max</div>
+        <div id="badge-com"></div>
+      </div>
+      <div class="score-card sc-vente">
+        <h3>Vente</h3>
+        <div class="score-val" id="sc-ven"></div>
+        <div class="score-max">/ 66 pts max</div>
+        <div id="badge-ven"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profil dominant -->
+  <div class="profil-card" id="profil-card">
+    <div class="profil-emoji" id="profil-emoji"></div>
+    <div class="profil-titre" id="profil-titre"></div>
+    <div class="profil-desc" id="profil-desc"></div>
+    <div class="profil-metiers">
+      <strong>Métiers qui correspondent à ce profil :</strong>
+      <div id="profil-metiers"></div>
+    </div>
+  </div>
+
+  <!-- Pistes de réflexion -->
+  <div class="reflexion-wrap">
+    <div class="reflexion-titre">💭 Ce que ce résultat dit sur toi</div>
+    <div id="reflexion-contenu"></div>
+  </div>
+
+  <!-- Questions pour aller plus loin -->
+  <div class="questions-wrap">
+    <div class="questions-titre">🤔 Pour aller plus loin — Réponds à ces questions par écrit</div>
+    <p class="questions-sub">Prends le temps d'y réfléchir honnêtement. Il n'y a pas de bonne réponse.</p>
+    <div id="questions-reflexion"></div>
+  </div>
+
+  <!-- Note prudence -->
+  <div class="prudence-wrap">
+    <div class="prudence-icon">⚠️</div>
+    <div class="prudence-txt">
+      <strong>Ce test donne des pistes, pas des certitudes.</strong><br>
+      Les résultats te donnent des directions de réflexion, mais ils ne définissent pas qui tu es ni ce que tu vas devenir. Beaucoup de gens réussissent dans un métier qui ne correspond pas à leur profil "dominant" — parce qu'ils ont travaillé, appris et évolué. Ce qui compte, c'est ce que tu vas faire de ces informations.
+    </div>
+  </div>
+
+  <div class="bottom-btns">
+    <button class="btn btn-reinit" onclick="reinit()">Recommencer le test</button>
+    <button class="btn btn-print"  onclick="window.print()">Imprimer ma fiche profil</button>
+  </div>
+
+</div>
+
+<script>
+// ===================================================
+// 33 AFFIRMATIONS NATHAN p.16
+// Barème p.17 : A=Oui B=Non C=Ne sait pas
+// Chaque réponse vaut 0 ou 1 ou 2 selon le profil
+// ===================================================
+
+// Format : [pts_accueil, pts_commerce, pts_vente] pour réponse A(Oui)
+// Réponse B(Non) = 0 partout / Réponse C(NSP) = points intermédiaires du barème Nathan p.17
+// Barème exact Nathan p.17 — colonne réponse gagnante + points
+
+const BAREM = [
+//  Q   Accueil        Commerce       Vente
+//      A   B   C      A   B   C      A   B   C
+  [ 1, [0,  0,  0],  [1,  0,  1],  [2,  0,  1] ],
+  [ 2, [2,  0,  2],  [0,  0,  0],  [1,  0,  1] ],
+  [ 3, [0,  0,  0],  [1,  0,  1],  [2,  0,  1] ],
+  [ 4, [2,  0,  2],  [0,  0,  0],  [1,  0,  1] ],
+  [ 5, [0,  0,  0],  [1,  0,  1],  [2,  0,  1] ],
+  [ 6, [2,  0,  2],  [1,  0,  1],  [0,  0,  0] ],
+  [ 7, [0,  0,  0],  [0,  0,  0],  [2,  0,  1] ], // receptionner marchandises → vente
+  [ 8, [2,  0,  2],  [0,  0,  0],  [0,  0,  0] ], // classement/courrier → accueil
+  [ 9, [0,  0,  0],  [1,  0,  1],  [2,  0,  1] ], // attendre le client → vente/commerce
+  [10, [2,  0,  2],  [0,  0,  0],  [0,  0,  0] ], // rester assis bureau → accueil
+  [11, [0,  0,  0],  [1,  0,  1],  [2,  0,  1] ], // aménagement vitrine
+  [12, [0,  0,  0],  [0,  0,  0],  [2,  0,  1] ], // négociation → vente
+  [13, [2,  0,  2],  [1,  0,  1],  [0,  0,  0] ], // stress clients mécontents → accueil
+  [14, [0,  0,  0],  [1,  0,  1],  [2,  0,  1] ], // agencer espace → commerce/vente
+  [15, [0,  0,  0],  [0,  0,  0],  [2,  0,  1] ], // aller chercher clients → vente
+  [16, [2,  0,  2],  [1,  0,  1],  [0,  0,  0] ], // organiser salons → accueil/commerce
+  [17, [0,  0,  0],  [1,  0,  1],  [2,  0,  1] ], // inventaire → vente
+  [18, [0,  0,  0],  [0,  0,  0],  [2,  0,  1] ], // salaire selon CA → vente
+  [19, [2,  0,  2],  [1,  0,  1],  [0,  0,  0] ], // orienter public → accueil
+  [20, [0,  0,  0],  [0,  0,  0],  [2,  0,  1] ], // prospecter → vente
+  [21, [0,  0,  0],  [1,  0,  1],  [2,  0,  1] ], // tenue espace de vente → commerce/vente
+  [22, [2,  0,  2],  [1,  0,  1],  [0,  0,  0] ], // hiérarchiser activités → accueil
+  [23, [0,  0,  0],  [0,  0,  0],  [2,  0,  1] ], // faire signer contrats → vente
+  [24, [0,  0,  0],  [1,  0,  1],  [2,  0,  1] ], // rendre magasin attractif → commerce/vente
+  [25, [2,  0,  2],  [1,  0,  1],  [0,  0,  0] ], // empathie → accueil
+  [26, [0,  0,  0],  [1,  0,  1],  [2,  0,  1] ], // animations magasin → commerce/vente
+  [27, [2,  0,  2],  [1,  0,  1],  [0,  0,  0] ], // agenda collaborateurs → accueil
+  [28, [2,  0,  2],  [0,  0,  0],  [0,  0,  0] ], // rédiger rapports → accueil
+  [29, [0,  0,  0],  [1,  0,  1],  [2,  0,  1] ], // travailler samedi → vente/commerce
+  [30, [2,  0,  2],  [1,  0,  1],  [0,  0,  0] ], // curieux/attentif/écoute → accueil
+  [31, [2,  0,  2],  [0,  0,  0],  [0,  0,  0] ], // horaires fixes → accueil
+  [32, [0,  0,  0],  [0,  0,  0],  [2,  0,  1] ], // plan prospection → vente
+  [33, [0,  0,  0],  [1,  0,  1],  [2,  0,  1] ], // gestion plusieurs boutiques → vente
+];
+
+const QUESTIONS = [
+  "J'apprécie ne pas avoir d'horaires fixes dans mon travail.",
+  "Je suis à l'aise avec l'outil téléphonique.",
+  "Je vais facilement au contact du client.",
+  "Prendre mes messages, orienter les clients et les conseiller me plaît.",
+  "J'aime être régulièrement en déplacement.",
+  "L'accueil en face-à-face me plaît.",
+  "J'apprécie réceptionner, contrôler et stocker les marchandises.",
+  "J'aime faire du classement, du tri et distribuer le courrier.",
+  "Je préfère attendre le client dans ma boutique.",
+  "J'ai plaisir à rester une journée assis derrière un bureau.",
+  "J'aime participer à l'aménagement d'une surface de vente, aménager une vitrine et/ou un rayon.",
+  "J'ai des compétences indéniables en négociation et un esprit persuasif.",
+  "Je gère très bien mon stress devant des clients mécontents.",
+  "J'aime agencer et aménager un espace avec des produits.",
+  "J'apprécie aller chercher de nouveaux clients.",
+  "J'apprécie organiser, participer à des salons.",
+  "J'apprécie participer aux opérations d'inventaire.",
+  "Je souhaite que mon salaire évolue en fonction du chiffre d'affaire réalisé.",
+  "Identifier le public, l'orienter dans le bon service me convient.",
+  "Prospecter de nouveaux clients me plaît.",
+  "M'assurer de la bonne tenue de mon espace de vente me plaît.",
+  "Je suis capable de hiérarchiser les activités pour organiser l'attente du public.",
+  "J'aime faire signer des contrats de vente.",
+  "J'aime rendre attractif mon magasin à travers le mobilier, l'affichage.",
+  "Je sais faire preuve d'empathie.",
+  "Organiser des animations en magasin me plaît.",
+  "J'aime organiser l'agenda de mes collaborateurs.",
+  "Rédiger des rapports de visite me convient.",
+  "Travailler le samedi et quelque dimanche dans l'année ne me font rien.",
+  "Je suis curieux, attentif et à l'écoute.",
+  "J'aime avoir des horaires fixes.",
+  "J'aime élaborer un plan de prospection et un plan de tourné.",
+  "Avoir la gestion de plusieurs boutiques me plaît.",
+];
+
+// Profils enrichis avec pistes de réflexion et questions
+const PROFILS = {
+  Accueil: {
+    emoji: "🤝",
+    cls: "profil-accueil",
+    desc: "Ton profil dominant est <strong>Métiers de l'Accueil</strong>. Tu te sens à l'aise dans les situations où il faut recevoir les gens, les orienter, les rassurer et organiser leur parcours. Tu aimes que les choses soient claires, que chacun trouve sa place, et tu te sens utile quand tu facilites la vie des autres.",
+    metiers: ["Chargé(e) d'accueil", "Hôte / Hôtesse d'accueil", "Standardiste", "Chargé(e) de clientèle", "Agent d'accueil en collectivité", "Réceptionniste"],
+    reflexion: {
+      valeurs: {
+        titre: "Ce que tu sembles valoriser",
+        texte: "D'après tes réponses, tu sembles valoriser la relation humaine directe, l'utilité concrète pour les autres, et la stabilité. Tu apprécies les environnements où les rôles sont clairs et où tu peux t'organiser. Le contact avec le public ne te fait pas peur — au contraire, c'est souvent ce qui te donne de l'énergie."
+      },
+      fonctionnement: {
+        titre: "Comment tu fonctionnes",
+        texte: "Tu travailles mieux dans un cadre structuré avec des procédures claires. Tu es probablement quelqu'un de fiable et de régulier — les autres savent qu'ils peuvent compter sur toi. Tu préfères gérer une situation à la fois et tu prends le temps de bien faire les choses plutôt que d'aller vite et de bâcler."
+      },
+      vigilance: {
+        titre: "Point de vigilance",
+        texte: "Les métiers de l'accueil demandent une grande résistance aux situations tendues : clients mécontents, situations imprévues, pression du flux. Si tu te sens vite dépassé(e) quand plusieurs choses arrivent en même temps, c'est une compétence à développer. Ce n'est pas un défaut — c'est un entraînement."
+      },
+      stage: {
+        titre: "Pour ton stage",
+        texte: "Cherche une enseigne avec un flux de clients régulier et un poste polyvalent (accueil physique + téléphone + orientation). Les centres commerciaux, les grandes surfaces, les entreprises de services sont de bons terrains. Observe comment les professionnels gèrent les situations difficiles — c'est le meilleur apprentissage."
+      }
+    },
+    questions: [
+      "Pense à une situation où tu as aidé quelqu'un à trouver ce qu'il cherchait (un endroit, une information, une solution). Comment tu t'es senti(e) après ? Est-ce que ça te plaisait vraiment ou c'était juste par obligation ?",
+      "Est-ce que tu te sens à l'aise quand quelqu'un est énervé ou stressé devant toi ? Qu'est-ce que tu fais naturellement dans ces moments-là ?",
+      "Tu as répondu que tu aimais les horaires fixes. Est-ce que tu penses que c'est parce que tu aimes la stabilité, ou parce que tu as peur de l'imprévu ? Quelle est la différence pour toi ?",
+      "Si tu devais décrire le type d'environnement de travail dans lequel tu te vois dans 5 ans, comment il serait ? (Intérieur / extérieur ? Avec beaucoup de monde ? Calme ou animé ?)",
+    ]
+  },
+
+  Commerce: {
+    emoji: "🏪",
+    cls: "profil-commerce",
+    desc: "Ton profil dominant est <strong>Métiers du Commerce</strong>. Tu es attiré(e) par la mise en valeur des produits, l'ambiance du point de vente et l'organisation commerciale. Tu aimes que ça soit beau, bien rangé, bien présenté — et tu as souvent des idées pour améliorer ce qui existe.",
+    metiers: ["Vendeur(se) conseil", "Employé(e) libre-service", "Marchandiseur(se)", "Manager de rayon", "Responsable de magasin", "Visual merchandiser"],
+    reflexion: {
+      valeurs: {
+        titre: "Ce que tu sembles valoriser",
+        texte: "Tu sembles attaché(e) à l'esthétique, à l'organisation et à l'ambiance. Tu es probablement quelqu'un qui remarque quand quelque chose est mal présenté, mal rangé ou pourrait être amélioré. Tu as le sens du détail et tu aimes que les choses aient l'air professionnel et attrayant."
+      },
+      fonctionnement: {
+        titre: "Comment tu fonctionnes",
+        texte: "Tu es à l'aise dans un environnement dynamique où les tâches sont variées. Tu n'es pas du genre à attendre qu'on te dise quoi faire — tu vois ce qui doit être fait et tu le fais. Tu aimes que le résultat soit visible : un rayon bien rempli, une vitrine réussie, un magasin qui donne envie."
+      },
+      vigilance: {
+        titre: "Point de vigilance",
+        texte: "Les métiers du commerce demandent autant de contact client que de travail physique (manutention, réassort, inventaire). Si tu n'aimes que la partie visuelle sans le reste, ça peut être difficile. Aussi : travailler le week-end et les jours fériés fait partie du quotidien — est-ce que tu t'y es vraiment projeté(e) ?"
+      },
+      stage: {
+        titre: "Pour ton stage",
+        texte: "Cherche une enseigne avec un univers produit qui t'intéresse vraiment (sport, mode, décoration, alimentation…). Le mieux est d'avoir un poste qui te laisse toucher à plusieurs aspects : conseil client, mise en rayon, animation. Demande à observer ou participer à une opération promotionnelle si c'est possible."
+      }
+    },
+    questions: [
+      "Quand tu entres dans un magasin, qu'est-ce que tu remarques en premier ? Est-ce que tu as déjà pensé 'moi je ferais ça autrement' en voyant un rayon ou une vitrine ?",
+      "Tu as répondu que tu aimais aménager les espaces. Est-ce que c'est quelque chose que tu fais aussi dans ta vie personnelle (ta chambre, tes affaires, un espace commun) ?",
+      "Comment tu réagis quand un client est difficile ou qu'une journée est physiquement épuisante ? Est-ce que tu arrives à rester motivé(e) quand même ?",
+      "Quel type de produits ou d'enseignes t'attire le plus ? Pourquoi celui-là plutôt qu'un autre ? Est-ce que tu pourrais travailler dans un secteur qui ne t'intéresse pas personnellement ?"
+    ]
+  },
+
+  Vente: {
+    emoji: "🎯",
+    cls: "profil-vente",
+    desc: "Ton profil dominant est <strong>Métiers de la Vente</strong>. Tu es attiré(e) par le défi, la persuasion et l'action commerciale directe. Tu aimes convaincre, aller chercher des clients, relever des objectifs et travailler en autonomie. Tu te motives par les résultats concrets.",
+    metiers: ["Commercial(e) terrain", "Télévendeur(se)", "Attaché(e) commercial(e)", "Négociateur(trice)", "Business developer", "Responsable de secteur"],
+    reflexion: {
+      valeurs: {
+        titre: "Ce que tu sembles valoriser",
+        texte: "Tu sembles attacher de l'importance à la liberté, à l'autonomie et à la reconnaissance des résultats. Tu aimes quand ton travail se mesure concrètement — un contrat signé, un objectif atteint, un client convaincu. Tu as probablement un goût pour le défi et tu n'as pas peur de la compétition."
+      },
+      fonctionnement: {
+        titre: "Comment tu fonctionnes",
+        texte: "Tu travailles mieux quand tu as des objectifs clairs et de la liberté pour les atteindre. Tu n'aimes pas être enfermé(e) dans des tâches répétitives — tu as besoin de variété et de mouvement. Tu es probablement quelqu'un qui rebondit vite après un échec plutôt que de te décourager."
+      },
+      vigilance: {
+        titre: "Point de vigilance",
+        texte: "Les métiers de la vente impliquent beaucoup de refus et d'échecs. Un(e) client(e) sur dix signe, les neuf autres disent non — parfois sèchement. Si tu te laisses facilement décourager par le rejet ou si tu as du mal à essuyer un 'non' sans le prendre personnellement, c'est la compétence clé à travailler. La persévérance n'est pas naturelle — ça s'apprend."
+      },
+      stage: {
+        titre: "Pour ton stage",
+        texte: "Cherche un poste qui implique du contact client actif — pas juste de l'attente en rayon, mais de la démarche, du conseil, de la proposition. Idéalement, un poste où tu peux participer à des phases de vente complètes (accueil → découverte des besoins → conseil → conclusion). Les enseignes de services, le B2B ou la vente technique sont de bons terrains d'apprentissage."
+      }
+    },
+    questions: [
+      "Est-ce que tu as déjà convaincu quelqu'un de faire quelque chose ou d'acheter quelque chose ? Comment tu t'y es pris(e) ? Est-ce que tu as trouvé ça naturel ou ça t'a demandé beaucoup d'efforts ?",
+      "Comment tu réagis quand quelqu'un te dit non ou te rejette ? Est-ce que tu abandonnes, tu insistes, ou tu essaies autrement ? Donne un exemple concret de ta vie.",
+      "Tu as répondu que tu aimais travailler en autonomie. Est-ce que ça veut dire que tu gères bien ton temps seul(e), ou plutôt que tu aimes faire les choses à ta façon ? Quelle est la différence ?",
+      "Les métiers de la vente impliquent souvent de travailler le week-end et d'avoir des objectifs chiffrés à atteindre. Est-ce que tu t'es vraiment projeté(e) là-dedans ? Qu'est-ce qui t'attire et qu'est-ce qui t'inquiète ?"
+    ]
+  }
+};
+
+// ===== ÉTAT =====
+let rep = {}; // qi (0-based) → {acc, com, ven} pts
+
+// ===== RENDU =====
+function renderQs() {
+  const zone = document.getElementById('qzone');
+  zone.innerHTML = '';
+  const tbl = document.createElement('table');
+  tbl.className = 'q-table';
+  tbl.innerHTML = `<thead><tr>
+    <th>Affirmation</th>
+    <th>Oui<br>(A)</th>
+    <th>Non<br>(B)</th>
+    <th>Ne sait<br>pas (C)</th>
+  </tr></thead><tbody id="qtbody"></tbody>`;
+  zone.appendChild(tbl);
+  const tbody = document.getElementById('qtbody');
+  QUESTIONS.forEach((q, qi) => {
+    const tr = document.createElement('tr');
+    tr.id = 'tr-' + qi;
+    tr.innerHTML = `<td><span class="q-num">${qi+1}.</span>${q}</td>
+      <td><input type="radio" name="q${qi}" value="A" onchange="onRep(${qi},'A')"></td>
+      <td><input type="radio" name="q${qi}" value="B" onchange="onRep(${qi},'B')"></td>
+      <td><input type="radio" name="q${qi}" value="C" onchange="onRep(${qi},'C')"></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function onRep(qi, val) {
+  const b = BAREM[qi]; // [q, [a,b,c accueil], [a,b,c commerce], [a,b,c vente]]
+  const idx = val==='A'?0:val==='B'?1:2;
+  rep[qi] = { acc: b[1][idx], com: b[2][idx], ven: b[3][idx] };
+  document.getElementById('tr-'+qi).classList.add('answered');
+  const n = Object.keys(rep).length;
+  document.getElementById('prog-fill').style.width = Math.round(n/33*100)+'%';
+  document.getElementById('prog-label').textContent = n+' / 33 affirmations cochées';
+  document.getElementById('btn-val').disabled = (n < 33);
+}
+
+// ===== CALCUL =====
+function calculer() {
+  let acc=0, com=0, ven=0;
+  Object.values(rep).forEach(r => { acc+=r.acc; com+=r.com; ven+=r.ven; });
+
+  document.getElementById('sc-acc').textContent = acc;
+  document.getElementById('sc-com').textContent = com;
+  document.getElementById('sc-ven').textContent = ven;
+
+  const max = Math.max(acc, com, ven);
+  const gagnants = [];
+  if (acc===max) gagnants.push('Accueil');
+  if (com===max) gagnants.push('Commerce');
+  if (ven===max) gagnants.push('Vente');
+
+  ['acc','com','ven'].forEach(k => document.getElementById('badge-'+k).innerHTML='');
+  gagnants.forEach(g => {
+    const id = g==='Accueil'?'acc':g==='Commerce'?'com':'ven';
+    document.getElementById('badge-'+id).innerHTML = '<span class="winner-badge">⭐ Profil dominant</span>';
+  });
+
+  // Afficher le profil
+  let profil, profilKey;
+  if (gagnants.length === 1) {
+    profilKey = gagnants[0];
+    profil = PROFILS[profilKey];
+    const card = document.getElementById('profil-card');
+    card.className = 'profil-card ' + profil.cls;
+    document.getElementById('profil-emoji').textContent = profil.emoji;
+    document.getElementById('profil-titre').textContent = 'Ton profil dominant : ' + profilKey;
+    document.getElementById('profil-desc').innerHTML = profil.desc;
+    document.getElementById('profil-metiers').innerHTML = profil.metiers.map(m=>`<span class="metier-pill">${m}</span>`).join('');
+    afficherReflexion(profil);
+  } else {
+    // Égalité — profil mixte
+    const card = document.getElementById('profil-card');
+    card.className = 'profil-card profil-egal';
+    document.getElementById('profil-emoji').textContent = '⚖️';
+    document.getElementById('profil-titre').textContent = 'Profil mixte : ' + gagnants.join(' / ');
+    document.getElementById('profil-desc').innerHTML = `Tes scores sont proches sur plusieurs profils — c'est une bonne nouvelle ! Tu combines des qualités de plusieurs univers MRC. Lis les descriptions de chaque profil ci-dessous et identifie lequel te parle le plus dans ta vie de tous les jours.`;
+    const metiers = [...new Set(gagnants.flatMap(g=>PROFILS[g].metiers))];
+    document.getElementById('profil-metiers').innerHTML = metiers.map(m=>`<span class="metier-pill">${m}</span>`).join('');
+    // Pour un profil mixte, afficher les questions du profil le + élevé
+    afficherReflexion(PROFILS[gagnants[0]]);
+  }
+
+
+  // ── SAUVEGARDE POUR LA PAGE BILAN ──
+  try {
+    const profNom = gagnants.join(' / ');
+    localStorage.setItem('mrc_result_nathan', JSON.stringify({
+      profil: profNom,
+      acc: acc, com: com, ven: ven,
+      resume: 'Profil dominant : ' + profNom + ' (' + Math.max(acc,com,ven) + '/66)'
+    }));
+  } catch(e) {}
+
+    document.getElementById('resultat').style.display = 'block';
+  document.getElementById('btn-val').style.display = 'none';
+  document.getElementById('resultat').scrollIntoView({ behavior:'smooth' });
+}
+
+function afficherReflexion(profil) {
+  // Pistes de réflexion
+  const cont = document.getElementById('reflexion-contenu');
+  const r = profil.reflexion;
+  cont.innerHTML = `
+    <div class="reflexion-bloc rb-valeurs">
+      <h3>🌟 ${r.valeurs.titre}</h3>${r.valeurs.texte}
+    </div>
+    <div class="reflexion-bloc rb-fonctionnement">
+      <h3>⚙️ ${r.fonctionnement.titre}</h3>${r.fonctionnement.texte}
+    </div>
+    <div class="reflexion-bloc rb-vigilance">
+      <h3>⚠️ ${r.vigilance.titre}</h3>${r.vigilance.texte}
+    </div>
+    <div class="reflexion-bloc rb-stage">
+      <h3>🎒 ${r.stage.titre}</h3>${r.stage.texte}
+    </div>
+  `;
+
+  // Questions de réflexion
+  const qzone = document.getElementById('questions-reflexion');
+  qzone.innerHTML = profil.questions.map((q, i) => `
+    <div class="q-reflexion">
+      <div class="q-reflexion-txt">Question ${i+1} — ${q}</div>
+      <textarea placeholder="Ma réponse…"></textarea>
+    </div>
+  `).join('');
+}
+
+// ===== RÉINIT =====
+function reinit() {
+  rep = {};
+  document.getElementById('resultat').style.display = 'none';
+  document.getElementById('btn-val').style.display = 'block';
+  document.getElementById('btn-val').disabled = true;
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('prog-label').textContent = '0 / 33 affirmations cochées';
+  renderQs();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+renderQs();
+</script>
+</body>
+</html>

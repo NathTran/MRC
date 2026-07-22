@@ -345,7 +345,19 @@ function corriger() {
     manquants.innerHTML = '';
   }
 
-  scoreZone.style.display = 'block';
+
+  // ── SAUVEGARDE POUR LA PAGE BILAN ──
+  try {
+    localStorage.setItem('mrc_result_classement', JSON.stringify({
+      score: correct,
+      total: elements.length,
+      incorrect: incorrect,
+      nonClasses: nonClasses,
+      resume: correct + '/' + elements.length + ' bons classements'
+    }));
+  } catch(e) {}
+
+    scoreZone.style.display = 'block';
 
   // Colorier les items dans les colonnes
   document.querySelectorAll('.assigned-item').forEach(row => {

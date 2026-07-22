@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mes soft skills — Qui suis-je vraiment ?</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f5f6fa; color: #1a1a1a; padding: 20px; max-width: 960px; margin: 0 auto; }
+
+    .header { background: linear-gradient(135deg, #2c3e7a, #5b8dd9); color: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; }
+    .header h1 { font-size: 1.25em; margin-bottom: 5px; }
+    .header p  { font-size: 0.83em; opacity: 0.9; line-height: 1.5; }
+
+    .info-eleve { display: flex; flex-wrap: wrap; gap: 12px; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 11px 16px; margin-bottom: 16px; }
+    .info-eleve label { display: flex; align-items: center; gap: 6px; font-size: 0.83em; color: #555; }
+    .info-eleve input { border: none; border-bottom: 1.5px solid #aaa; outline: none; font-size: 0.83em; width: 150px; padding: 2px 4px; background: transparent; }
+
+    .consigne { background: #eaf0fb; border-left: 4px solid #2c3e7a; border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 20px; font-size: 0.86em; line-height: 1.7; }
+    .consigne strong { color: #2c3e7a; }
+
+    .bareme { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .bar-item { flex: 1 1 auto; text-align: center; padding: 8px 10px; border-radius: 8px; font-size: 0.82em; font-weight: bold; }
+    .bar-tj  { background: #d5f5e3; color: #1e6e3a; border: 1.5px solid #27ae60; }
+    .bar-pf  { background: #fef9e7; color: #9a7d0a; border: 1.5px solid #f1c40f; }
+    .bar-rar { background: #fadbd8; color: #922b21; border: 1.5px solid #e74c3c; }
+    .bar-item span { display: block; font-size: 1.1em; margin-bottom: 2px; }
+
+    .prog-wrap { background: #e0e0e0; border-radius: 20px; height: 7px; margin-bottom: 5px; overflow: hidden; }
+    .prog-fill  { background: #2c3e7a; height: 100%; border-radius: 20px; transition: width 0.3s; width: 0%; }
+    .prog-label { font-size: 0.77em; color: #666; margin-bottom: 20px; }
+
+    /* SECTION TITRE */
+    .section-band { background: #2c3e7a; color: #fff; border-radius: 8px; padding: 8px 16px; margin: 24px 0 12px; font-size: 0.88em; font-weight: bold; display: flex; align-items: center; justify-content: space-between; }
+    .section-band span { background: rgba(255,255,255,0.2); border-radius: 20px; padding: 2px 10px; font-size: 0.82em; }
+
+    /* CARTES */
+    .ss-card { background: #fff; border: 1.5px solid #ddd; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; transition: border-color 0.2s, box-shadow 0.2s; }
+    .ss-card.done-tj  { border-left: 5px solid #27ae60; }
+    .ss-card.done-pf  { border-left: 5px solid #f1c40f; }
+    .ss-card.done-rar { border-left: 5px solid #e74c3c; }
+
+    .ss-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .ss-emoji  { font-size: 1.5em; line-height: 1; flex-shrink: 0; }
+    .ss-meta   { flex: 1; }
+    .ss-nom    { font-size: 0.9em; font-weight: bold; color: #2c3e7a; }
+    .ss-num    { font-size: 0.72em; color: #aaa; }
+    .ss-def    { font-size: 0.78em; color: #777; font-style: italic; margin-bottom: 8px; }
+
+    .situation { background: #f0f4ff; border-radius: 6px; padding: 9px 12px; font-size: 0.83em; line-height: 1.6; color: #333; margin-bottom: 10px; border-left: 3px solid #5b8dd9; }
+
+    .opts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    .opt-btn { padding: 9px 6px; border-radius: 8px; border: 1.5px solid #ddd; cursor: pointer; font-size: 0.82em; font-family: Arial, sans-serif; background: #fff; transition: background 0.15s, border-color 0.15s; text-align: center; line-height: 1.4; }
+    .opt-btn:hover { background: #eaf0fb; border-color: #5b8dd9; }
+    .opt-btn.sel-tj  { background: #d5f5e3; border-color: #27ae60; color: #1e6e3a; font-weight: bold; }
+    .opt-btn.sel-pf  { background: #fef9e7; border-color: #f1c40f; color: #9a7d0a; font-weight: bold; }
+    .opt-btn.sel-rar { background: #fadbd8; border-color: #e74c3c; color: #922b21; font-weight: bold; }
+
+    /* SCORE PAR SS pendant le test */
+    .ss-mini-score { font-size: 0.72em; color: #aaa; margin-top: 6px; text-align: right; display: none; }
+    .ss-card.done-tj .ss-mini-score, .ss-card.done-pf .ss-mini-score, .ss-card.done-rar .ss-mini-score { display: block; }
+
+    /* BOUTON VALIDER */
+    .btn-valider { display: block; width: 100%; max-width: 320px; margin: 24px auto; padding: 12px 24px; border-radius: 30px; background: #2c3e7a; color: #fff; border: none; cursor: pointer; font-size: 0.95em; font-weight: bold; transition: background 0.2s, transform 0.1s; }
+    .btn-valider:hover:not(:disabled) { background: #1e2d5a; transform: translateY(-1px); }
+    .btn-valider:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* RÉSULTAT */
+    #resultat { display: none; }
+    .res-bloc { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+    .res-bloc h2 { color: #2c3e7a; font-size: 0.95em; font-weight: bold; margin-bottom: 12px; }
+
+    /* PODIUM */
+    .podium { display: flex; gap: 10px; flex-wrap: wrap; }
+    .pod { flex: 1 1 120px; border-radius: 10px; padding: 12px 10px; text-align: center; border: 1.5px solid #ddd; }
+    .pod-1 { background: #fef9e7; border-color: #f1c40f; }
+    .pod-2 { background: #f5f5f5; border-color: #bbb; }
+    .pod-3 { background: #fdebd0; border-color: #e67e22; }
+    .pod-emoji { font-size: 1.5em; margin-bottom: 3px; }
+    .pod-nom { font-size: 0.8em; font-weight: bold; color: #2c3e7a; margin-top: 4px; }
+    .pod-detail { font-size: 0.75em; color: #777; margin-top: 2px; }
+
+    /* BARRE DE SCORE PAR SS */
+    .ss-result-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.83em; }
+    .ss-result-row .label { width: 180px; flex-shrink: 0; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+    .bar-outer { flex: 1; background: #eee; border-radius: 20px; height: 10px; overflow: hidden; }
+    .bar-inner { height: 100%; border-radius: 20px; transition: width 0.5s; }
+    .bar-pct   { width: 30px; text-align: right; color: #555; font-weight: bold; }
+
+    /* LISTES */
+    .pills { display: flex; flex-wrap: wrap; gap: 7px; }
+    .pill-fort { background: #d5f5e3; border: 1.5px solid #27ae60; border-radius: 20px; padding: 4px 12px; font-size: 0.82em; font-weight: bold; color: #1e6e3a; }
+    .pill-pf   { background: #fef9e7; border: 1.5px solid #f1c40f;  border-radius: 20px; padding: 4px 12px; font-size: 0.82em; color: #9a7d0a; }
+    .pill-dev  { background: #fadbd8; border: 1.5px solid #e74c3c;  border-radius: 20px; padding: 4px 12px; font-size: 0.82em; color: #922b21; }
+
+    /* BILAN */
+    .bilan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px) { .bilan-grid { grid-template-columns: 1fr; } }
+    .bilan-col h3 { font-size: 0.83em; font-weight: bold; margin-bottom: 6px; padding: 5px 10px; border-radius: 6px; }
+    .bh-v { background: #d5f5e3; color: #1e6e3a; }
+    .bh-r { background: #fadbd8; color: #922b21; }
+    .bh-b { background: #d6eaf8; color: #1a5276; }
+    .bh-j { background: #fef9e7; color: #9a7d0a; }
+    .bh-p { background: #f0eaff; color: #5b2c8f; }
+    textarea { width: 100%; height: 70px; font-size: 0.83em; border: 1px solid #ddd; border-radius: 6px; padding: 7px; resize: none; font-family: Arial, sans-serif; line-height: 1.5; }
+
+    /* AVATAR */
+    .avatar-wrap { background: #f0f4ff; border: 1.5px dashed #5b8dd9; border-radius: 10px; padding: 16px 18px; margin-bottom: 20px; text-align: center; }
+    .avatar-wrap h2 { color: #2c3e7a; font-size: 0.95em; margin-bottom: 6px; }
+    .avatar-wrap p  { font-size: 0.83em; color: #555; line-height: 1.6; margin-bottom: 10px; }
+    .avatar-links { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .av-link { display: inline-block; color: #fff; border-radius: 20px; padding: 8px 18px; font-size: 0.83em; font-weight: bold; text-decoration: none; }
+    .av-canva  { background: #00c4cc; }
+    .av-picrew { background: #e74c3c; }
+    .av-link:hover { opacity: 0.85; }
+
+    .bottom-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 20px 0 30px; }
+    .btn { padding: 9px 22px; border-radius: 24px; border: none; cursor: pointer; font-size: 0.86em; font-weight: bold; }
+    .btn:hover { opacity: 0.85; }
+    .btn-reinit { background: #e9ecef; color: #333; border: 1px solid #ccc; }
+    .btn-print  { background: #27ae60; color: #fff; }
+
+    @media print {
+      body { background: #fff; padding: 8px; }
+      .btn-valider, .bottom-btns, .avatar-links, .consigne, .bareme { display: none !important; }
+      #resultat { display: block !important; }
+      .ss-card { break-inside: avoid; border: 1px solid #ccc !important; box-shadow: none !important; }
+      .res-bloc, .bilan-grid { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Mes soft skills — Qui suis-je vraiment ?</h1>
+  <p>2de MRC · MME TRAN · 18 soft skills · 3 situations chacun · 54 questions au total</p>
+</div>
+
+<div class="info-eleve">
+  <label>Nom : <input type="text" placeholder="………………………"></label>
+  <label>Prénom : <input type="text" placeholder="………………………"></label>
+  <label>Classe : <input type="text" placeholder="2de MRC"></label>
+  <label>Date : <input type="text" placeholder="………………………"></label>
+</div>
+
+<div class="consigne">
+  <strong>Consigne :</strong> Pour chaque situation, coche la réponse qui te correspond le plus souvent dans ta vie de tous les jours — à l'école, chez toi, avec tes amis.<br>
+  Il n'y a pas de bonne ou mauvaise réponse. Réponds honnêtement : ce test est fait pour <strong>toi</strong>.
+</div>
+
+<div class="bareme">
+  <div class="bar-item bar-tj"><span>✅</span>Toujours<br><em style="font-weight:normal;font-size:0.9em">C'est vraiment moi</em></div>
+  <div class="bar-item bar-pf"><span>🤔</span>Parfois<br><em style="font-weight:normal;font-size:0.9em">Ça dépend des jours</em></div>
+  <div class="bar-item bar-rar"><span>❌</span>Rarement<br><em style="font-weight:normal;font-size:0.9em">Pas vraiment moi</em></div>
+</div>
+
+<div class="prog-wrap"><div class="prog-fill" id="prog-fill"></div></div>
+<div class="prog-label" id="prog-label">0 / 54 situations traitées</div>
+
+<div id="qzone"></div>
+
+<button class="btn-valider" id="btn-val" onclick="afficherResultat()" disabled>
+  Voir mes soft skills →
+</button>
+
+<!-- RÉSULTAT -->
+<div id="resultat">
+
+  <div class="res-bloc">
+    <h2>🏆 Mon top 3 — mes soft skills les plus forts</h2>
+    <div class="podium" id="podium"></div>
+  </div>
+
+  <div class="res-bloc">
+    <h2>📊 Mon profil complet</h2>
+    <div id="barres"></div>
+  </div>
+
+  <div class="res-bloc">
+    <h2>✅ Mes points forts — ce que je fais naturellement bien</h2>
+    <div class="pills" id="pills-fort"></div>
+  </div>
+
+  <div class="res-bloc">
+    <h2>🔶 En cours — j'y arrive parfois</h2>
+    <div class="pills" id="pills-pf"></div>
+  </div>
+
+  <div class="res-bloc">
+    <h2>💪 À développer — mon potentiel de progression</h2>
+    <div class="pills" id="pills-dev"></div>
+  </div>
+
+  <div class="res-bloc">
+    <h2>Ma fiche bilan</h2>
+    <div class="bilan-grid">
+      <div class="bilan-col">
+        <h3 class="bh-v">Mon soft skill n°1 — donne un exemple concret de ta vie</h3>
+        <textarea placeholder="Ex : Mon point fort c'est l'écoute. Quand mon ami avait un problème, je l'ai laissé parler sans l'interrompre et il m'a dit que ça l'avait vraiment aidé…"></textarea>
+      </div>
+      <div class="bilan-col">
+        <h3 class="bh-r">Le soft skill que je veux développer — pourquoi ?</h3>
+        <textarea placeholder="Ex : Je dois travailler ma gestion du stress. Avant un contrôle je panique et j'oublie tout ce que je savais…"></textarea>
+      </div>
+      <div class="bilan-col">
+        <h3 class="bh-b">Le lien avec mon profil métier MRC (test Nathan)</h3>
+        <textarea placeholder="Ex : Mon profil dominant est Commerce. Ce métier demande du sens du contact et de la créativité — ce sont justement mes points forts…"></textarea>
+      </div>
+      <div class="bilan-col">
+        <h3 class="bh-j">Le lien avec ma confiance en soi (test Fanget)</h3>
+        <textarea placeholder="Ex : Mon sous-score B (affirmation de soi) était faible au test Fanget. Je vois ici que la prise d'initiative et la gestion des conflits sont mes points à développer…"></textarea>
+      </div>
+      <div class="bilan-col" style="grid-column: 1 / -1;">
+        <h3 class="bh-p">Ce que je retiens sur moi après les 3 tests — en 3 lignes</h3>
+        <textarea style="height:65px" placeholder="Aujourd'hui j'ai appris que je suis quelqu'un qui… Mon vrai point fort c'est… Ce que je vais travailler avant mon stage c'est… Mon profil MRC est…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="avatar-wrap">
+    <h2>Mon avatar professionnel</h2>
+    <p>Maintenant que tu sais qui tu es, crée ton avatar !<br>
+    Il illustrera ta fiche profil finale. Choisis l'outil que tu préfères :</p>
+    <div class="avatar-links">
+      <a href="https://www.canva.com" target="_blank" class="av-link av-canva">🎨 Canva — Badge ou personnage pro</a>
+      <a href="https://www.picrew.me" target="_blank" class="av-link av-picrew">🧑 Picrew — Créer mon avatar</a>
+    </div>
+    <p style="margin-top:10px;font-size:0.78em;color:#777">Télécharge ton avatar et colle-le dans ta fiche profil.</p>
+  </div>
+
+  <div class="bottom-btns">
+    <button class="btn btn-reinit" onclick="reinit()">Recommencer</button>
+    <button class="btn btn-print"  onclick="window.print()">Imprimer ma fiche</button>
+  </div>
+
+</div>
+
+<script>
+// =====================================================
+// 18 SOFT SKILLS × 3 SITUATIONS
+// Scores : Toujours=2 / Parfois=1 / Rarement=0
+// =====================================================
+const SS = [
+  // ── RELATIONNEL ──────────────────────────────────
+  {
+    id:"ecoute", emoji:"👂", nom:"Écoute active", section:"Relationnel",
+    def:"Savoir vraiment écouter sans couper la parole ni penser à ce qu'on va dire",
+    sits:[
+      "Ton(ta) meilleur(e) ami(e) t'explique un problème qu'il/elle a. Tu poses ton téléphone, tu le/la regardes et tu écoutes jusqu'au bout sans l'interrompre.",
+      "En cours, un(e) camarade explique quelque chose devant la classe. Même si tu connais déjà la réponse, tu le/la laisses finir avant d'intervenir.",
+      "Quelqu'un te raconte quelque chose que tu trouves peu intéressant. Tu restes attentif(ve) et tu montres que tu écoutes quand même.",
+    ]
+  },
+  {
+    id:"empathie", emoji:"🤗", nom:"Empathie", section:"Relationnel",
+    def:"Comprendre ce que l'autre ressent, même sans qu'il le dise",
+    sits:[
+      "Un(e) camarade rate quelque chose d'important. Même si ça ne te concerne pas, tu ressens le besoin de lui dire un mot gentil — et tu trouves les bons mots.",
+      "Tu vois quelqu'un seul(e) dans un coin qui a l'air triste. Tu vas spontanément lui demander si ça va, même si tu ne le/la connais pas très bien.",
+      "Une personne est nerveuse avant une présentation. Tu comprends exactement ce qu'elle ressent et tu sais quoi lui dire pour l'aider à se calmer.",
+    ]
+  },
+  {
+    id:"contact", emoji:"😊", nom:"Sens du contact", section:"Relationnel",
+    def:"Se sentir à l'aise pour parler à des inconnus",
+    sits:[
+      "Tu arrives dans un endroit où tu ne connais personne (nouveau groupe, soirée, stage). Tu engages la conversation naturellement sans attendre que les autres viennent vers toi.",
+      "Au téléphone pour une démarche (prendre un rendez-vous, poser une question à un inconnu), tu n'as pas besoin de te préparer longtemps — tu vas droit au but.",
+      "En stage ou lors d'une visite d'entreprise, tu poses des questions aux professionnels sans te sentir intimidé(e).",
+    ]
+  },
+  {
+    id:"conflit", emoji:"☮️", nom:"Gestion des conflits", section:"Relationnel",
+    def:"Désamorcer une dispute sans s'énerver",
+    sits:[
+      "Deux personnes autour de toi commencent à s'écharper. Tu arrives naturellement à calmer les choses et à faire parler chacun sans prendre parti.",
+      "Quelqu'un te dit quelque chose d'injuste ou de blessant. Au lieu de t'énerver, tu prends le temps d'expliquer calmement ton point de vue.",
+      "Dans un travail de groupe, un désaccord bloque tout le monde. Tu proposes une solution qui satisfait tout le monde sans que ça tourne au conflit.",
+    ]
+  },
+  {
+    id:"equipe", emoji:"🤝", nom:"Esprit d'équipe", section:"Relationnel",
+    def:"Préférer réussir ensemble plutôt que seul(e)",
+    sits:[
+      "Pour un projet de groupe, tu as une idée que tu trouves bonne. Mais un(e) autre propose quelque chose de différent. Tu écoutes et vous construisez quelque chose de mieux ensemble.",
+      "Un(e) camarade a du mal à comprendre quelque chose. Tu lui expliques sans te plaindre, même si ça te prend du temps.",
+      "Dans une activité collective, tu assumes une tâche moins valorisante parce que tu sais que c'est utile pour le groupe.",
+    ]
+  },
+  // ── PERSONNEL ────────────────────────────────────
+  {
+    id:"stress", emoji:"🧘", nom:"Gestion du stress", section:"Personnel",
+    def:"Rester calme et efficace quand ça se complique",
+    sits:[
+      "Il est 8h50, ton bus est en retard, tu as un contrôle à 9h. Au lieu de paniquer et de bloquer, tu arrives quand même à te concentrer sur ce que tu peux faire.",
+      "La veille d'un examen ou d'une présentation importante, tu arrives à dormir correctement — tu ne te retournes pas dans ton lit toute la nuit.",
+      "Quand plusieurs choses arrivent en même temps, tu priorises sans te laisser submerger et tu avances calmement.",
+    ]
+  },
+  {
+    id:"adaptation", emoji:"🔄", nom:"Adaptabilité", section:"Personnel",
+    def:"Changer de plan sans paniquer quand ça tourne autrement",
+    sits:[
+      "Une sortie prévue depuis longtemps tombe à l'eau à la dernière minute. Tu trouves rapidement une autre idée et tu ne passes pas la journée à râler.",
+      "En cours, le/la prof change d'exercice ou de méthode sans prévenir. Tu t'adaptes sans rechigner et tu suis le nouveau rythme.",
+      "Tu arrives dans un nouvel environnement (nouvelle classe, nouveau lieu de stage). En quelques jours, tu te sens à l'aise et tu trouves tes repères.",
+    ]
+  },
+  {
+    id:"rigueur", emoji:"✅", nom:"Rigueur", section:"Personnel",
+    def:"Faire les choses correctement jusqu'au bout, même quand c'est long",
+    sits:[
+      "Tu as un devoir à rendre. Quand tu commences à en avoir marre, tu te forces à le terminer proprement plutôt que de bâcler la fin.",
+      "Quand tu fais quelque chose, tu vérifies ton travail avant de le donner — tu ne te contentes pas du premier jet.",
+      "Tu termines ce que tu as commencé, même si entre-temps tu as moins envie de le faire.",
+    ]
+  },
+  {
+    id:"perseverance", emoji:"💪", nom:"Persévérance", section:"Personnel",
+    def:"Ne pas abandonner quand c'est difficile",
+    sits:[
+      "Tu rates quelque chose plusieurs fois de suite (un exercice, un apprentissage, un geste). Tu continues d'essayer au lieu de laisser tomber.",
+      "Un projet prend beaucoup plus de temps que prévu. Tu continues quand même jusqu'à ce que ce soit fini, même si tu aurais pu t'arrêter.",
+      "Quelqu'un te dit que tu n'y arriveras pas. Au lieu de te décourager, ça te motive encore plus à y arriver.",
+    ]
+  },
+  {
+    id:"autonomie", emoji:"🚀", nom:"Autonomie", section:"Personnel",
+    def:"Travailler seul(e) sans avoir besoin qu'on te surveille",
+    sits:[
+      "On te confie une tâche sans t'expliquer exactement comment la faire. Tu te débrouilles, tu cherches par toi-même et tu vas jusqu'au bout.",
+      "Pendant une période de travail libre (étude, permanence), tu travailles vraiment sans attendre que quelqu'un te surveille.",
+      "À la maison, tu gères ton travail scolaire sans que tes parents aient à te rappeler chaque soir ce que tu dois faire.",
+    ]
+  },
+  // ── COMMUNICATION ────────────────────────────────
+  {
+    id:"communication", emoji:"🗣️", nom:"Communication", section:"Communication",
+    def:"S'exprimer clairement pour que les autres comprennent du premier coup",
+    sits:[
+      "Quelqu'un te demande comment faire quelque chose que tu sais faire. Tu l'expliques et la personne comprend sans te faire répéter dix fois.",
+      "Tu dois expliquer un problème ou une situation à quelqu'un (prof, parent, responsable). Tu trouves facilement les bons mots et la bonne façon de le dire.",
+      "Quand tu écris un message (texto, mail), tu le relis pour vérifier qu'il est clair avant de l'envoyer.",
+    ]
+  },
+  {
+    id:"initiative", emoji:"💡", nom:"Prise d'initiative", section:"Communication",
+    def:"Proposer ou agir sans attendre qu'on te le demande",
+    sits:[
+      "Tu es quelque part et tu vois qu'un truc ne va pas ou pourrait être amélioré. Tu proposes spontanément une solution, même si personne ne te l'a demandé.",
+      "Dans un travail de groupe qui n'avance pas, tu prends les choses en main pour relancer la dynamique.",
+      "Tu vois quelqu'un qui a besoin d'aide. Tu proposes ton aide sans attendre qu'il/elle te le demande.",
+    ]
+  },
+  {
+    id:"creativite", emoji:"🎨", nom:"Créativité", section:"Communication",
+    def:"Trouver des idées originales quand tout le monde fait pareil",
+    sits:[
+      "Pour un exposé ou un projet, tu proposes quelque chose de différent des autres — et ça marche bien.",
+      "Face à un problème que personne n'a réussi à résoudre, tu proposes une idée à laquelle personne n'avait pensé.",
+      "Quand tu dois personnaliser quelque chose (cadeau, message, projet), tu trouves des idées originales sans te contenter du premier truc qui vient.",
+    ]
+  },
+  // ── PROFESSIONNEL ────────────────────────────────
+  {
+    id:"organisation", emoji:"📅", nom:"Organisation", section:"Professionnel",
+    def:"Planifier son temps et ne pas oublier les choses importantes",
+    sits:[
+      "Tu as plusieurs trucs à gérer dans la semaine. Tu arrives à tout faire sans oublier quoi que ce soit et sans tout faire la veille au soir.",
+      "Tu utilises naturellement un agenda, une to-do list ou un outil pour ne rien oublier — et ça marche vraiment.",
+      "Avant de partir pour une journée chargée, tu prépares ce dont tu as besoin la veille pour être sûr(e) de ne rien oublier.",
+    ]
+  },
+  {
+    id:"responsabilite", emoji:"🎯", nom:"Sens des responsabilités", section:"Professionnel",
+    def:"Assumer ce qu'on fait, y compris quand ça tourne mal",
+    sits:[
+      "Tu fais une erreur. Tu le reconnais directement sans chercher à te justifier ou à trouver une excuse, et tu cherches comment corriger.",
+      "On t'a confié quelque chose (une tâche, un objet, une responsabilité). Tu y fais attention comme si c'était à toi.",
+      "Tu t'engages à faire quelque chose. Même si entre-temps tu as moins envie, tu tiens ta parole.",
+    ]
+  },
+  {
+    id:"ponctualite", emoji:"⏰", nom:"Ponctualité et fiabilité", section:"Professionnel",
+    def:"Être là à l'heure et faire ce qu'on a dit qu'on ferait",
+    sits:[
+      "Tu arrives à l'heure — voire un peu en avance — que ce soit en cours, à un rendez-vous ou à un entraînement.",
+      "Quand tu dis que tu vas faire quelque chose, tu le fais. Les gens savent qu'ils peuvent compter sur toi.",
+      "Si tu vas être en retard ou si tu ne peux pas tenir un engagement, tu préviens à l'avance sans attendre la dernière minute.",
+    ]
+  },
+  {
+    id:"curiosite", emoji:"🔍", nom:"Curiosité / envie d'apprendre", section:"Professionnel",
+    def:"Avoir envie de comprendre et d'apprendre des choses nouvelles",
+    sits:[
+      "Quand un sujet t'intéresse (même en dehors des cours), tu cherches à en savoir plus par toi-même — tu regardes des vidéos, tu lis, tu poses des questions.",
+      "En cours ou en stage, tu poses des questions parce que tu veux vraiment comprendre — pas juste pour avoir une bonne note.",
+      "Tu accueilles les nouvelles façons de faire ou les nouvelles technologies avec curiosité plutôt que d'en avoir peur.",
+    ]
+  },
+  {
+    id:"respect_regles", emoji:"📋", nom:"Respect des règles", section:"Professionnel",
+    def:"Suivre les règles même quand personne ne surveille",
+    sits:[
+      "Tu respectes les règles et les consignes données, même quand tu pourrais t'en passer sans que personne s'en aperçoive.",
+      "Dans un cadre professionnel ou scolaire, tu suis les procédures établies plutôt que de faire à ta façon parce que ça t'arrangerait.",
+      "Quand une règle te semble injuste, tu exprimes ton désaccord par les voies normales (en parler, demander une explication) plutôt que de passer outre.",
+    ]
+  },
+];
+
+// Sections pour les bandeaux
+const SECTIONS = ["Relationnel", "Personnel", "Communication", "Professionnel"];
+
+// État : rep[ssId][sitIdx] = 'tj' | 'pf' | 'rar'
+let rep = {};
+SS.forEach(ss => { rep[ss.id] = {}; });
+let totalRepondus = 0;
+const TOTAL_QUESTIONS = SS.length * 3; // 54
+
+// =====================================================
+// RENDU
+// =====================================================
+function renderQs() {
+  const zone = document.getElementById('qzone');
+  zone.innerHTML = '';
+  let currentSection = null;
+
+  SS.forEach((ss, si) => {
+    // Bandeau de section
+    if (ss.section !== currentSection) {
+      currentSection = ss.section;
+      const band = document.createElement('div');
+      band.className = 'section-band';
+      const icons = { Relationnel:"🤝", Personnel:"🧠", Communication:"💬", Professionnel:"💼" };
+      band.innerHTML = `<span>${icons[ss.section]} ${ss.section}</span>`;
+      zone.appendChild(band);
+    }
+
+    // Carte du soft skill
+    const card = document.createElement('div');
+    card.className = 'ss-card';
+    card.id = 'card-' + ss.id;
+
+    // Header
+    const headerHTML = `
+      <div class="ss-header">
+        <div class="ss-emoji">${ss.emoji}</div>
+        <div class="ss-meta">
+          <div class="ss-nom">${ss.nom}</div>
+          <div class="ss-num">Soft skill ${si+1}/18</div>
+        </div>
+      </div>
+      <div class="ss-def">${ss.def}</div>
+    `;
+
+    // Situations
+    const sitsHTML = ss.sits.map((sit, idx) => `
+      <div class="situation" style="margin-bottom:${idx<2?'10px':''}">
+        <strong>Situation ${idx+1} :</strong> ${sit}
+      </div>
+      <div class="opts" style="margin-bottom:${idx<2?'14px':''}">
+        <button class="opt-btn" id="tj-${ss.id}-${idx}"  onclick="choisir('${ss.id}',${idx},'tj')">✅ Toujours</button>
+        <button class="opt-btn" id="pf-${ss.id}-${idx}"  onclick="choisir('${ss.id}',${idx},'pf')">🤔 Parfois</button>
+        <button class="opt-btn" id="rar-${ss.id}-${idx}" onclick="choisir('${ss.id}',${idx},'rar')">❌ Rarement</button>
+      </div>
+    `).join('');
+
+    card.innerHTML = headerHTML + sitsHTML +
+      `<div class="ss-mini-score" id="mini-${ss.id}"></div>`;
+    zone.appendChild(card);
+  });
+}
+
+function choisir(ssId, sitIdx, val) {
+  const wasAnswered = rep[ssId][sitIdx] !== undefined;
+  rep[ssId][sitIdx] = val;
+
+  // Mise à jour des boutons
+  ['tj','pf','rar'].forEach(v => {
+    document.getElementById(`${v}-${ssId}-${sitIdx}`).className = 'opt-btn';
+  });
+  document.getElementById(`${val}-${ssId}-${sitIdx}`).className = `opt-btn sel-${val}`;
+
+  // Progression globale
+  if (!wasAnswered) totalRepondus++;
+  const pct = Math.round(totalRepondus / TOTAL_QUESTIONS * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = totalRepondus + ' / ' + TOTAL_QUESTIONS + ' situations traitées';
+  document.getElementById('btn-val').disabled = (totalRepondus < TOTAL_QUESTIONS);
+
+  // Mini score sur la carte
+  const score = calcScoreSS(ssId);
+  const answered = Object.keys(rep[ssId]).length;
+  const card = document.getElementById('card-' + ssId);
+  const mini = document.getElementById('mini-' + ssId);
+  if (answered === 3) {
+    const label = score >= 5 ? '✅ Fort' : score >= 3 ? '🔶 En cours' : '💪 À développer';
+    mini.textContent = `Score : ${score}/6 — ${label}`;
+    const cls = score >= 5 ? 'tj' : score >= 3 ? 'pf' : 'rar';
+    card.className = 'ss-card done-' + cls;
+  }
+}
+
+function calcScoreSS(ssId) {
+  return Object.values(rep[ssId]).reduce((acc, v) =>
+    acc + (v==='tj'?2:v==='pf'?1:0), 0);
+}
+
+// =====================================================
+// RÉSULTAT
+// =====================================================
+function afficherResultat() {
+  // Calculer les scores
+  const scores = SS.map(ss => ({
+    ss,
+    score: calcScoreSS(ss.id),
+    label: calcScoreSS(ss.id) >= 5 ? 'fort' : calcScoreSS(ss.id) >= 3 ? 'pf' : 'dev'
+  })).sort((a,b) => b.score - a.score);
+
+  // PODIUM top 3
+  const pod = document.getElementById('podium');
+  pod.innerHTML = '';
+  ['🥇','🥈','🥉'].forEach((m, i) => {
+    const item = scores[i];
+    const cls = ['pod-1','pod-2','pod-3'][i];
+    const d = document.createElement('div');
+    d.className = 'pod ' + cls;
+    d.innerHTML = `
+      <div class="pod-emoji">${item.ss.emoji}</div>
+      <div style="font-size:1.2em">${m}</div>
+      <div class="pod-nom">${item.ss.nom}</div>
+      <div class="pod-detail">${item.score}/6 pts</div>
+    `;
+    pod.appendChild(d);
+  });
+
+  // BARRES
+  const barres = document.getElementById('barres');
+  barres.innerHTML = '';
+  scores.forEach(item => {
+    const pct = Math.round(item.score / 6 * 100);
+    const color = item.score >= 5 ? '#27ae60' : item.score >= 3 ? '#f1c40f' : '#e74c3c';
+    const row = document.createElement('div');
+    row.className = 'ss-result-row';
+    row.innerHTML = `
+      <div class="label">${item.ss.emoji} ${item.ss.nom}</div>
+      <div class="bar-outer"><div class="bar-inner" style="width:${pct}%;background:${color}"></div></div>
+      <div class="bar-pct">${item.score}/6</div>
+    `;
+    barres.appendChild(row);
+  });
+
+  // PILLS
+  const mkPills = (items, cls, id) => {
+    const el = document.getElementById(id);
+    el.innerHTML = items.length
+      ? items.map(i => `<span class="${cls}">${i.ss.emoji} ${i.ss.nom}</span>`).join('')
+      : '<em style="font-size:0.83em;color:#777">Aucun dans cette catégorie.</em>';
+  };
+  mkPills(scores.filter(i=>i.label==='fort'), 'pill-fort', 'pills-fort');
+  mkPills(scores.filter(i=>i.label==='pf'),   'pill-pf',   'pills-pf');
+  mkPills(scores.filter(i=>i.label==='dev'),   'pill-dev',  'pills-dev');
+
+
+  // ── SAUVEGARDE POUR LA PAGE BILAN ──
+  try {
+    const top3 = scores.slice(0,3).map(s=>s.ss.nom);
+    const forts = scores.filter(s=>s.label==='fort').map(s=>s.ss.nom);
+    const adev  = scores.filter(s=>s.label==='dev').map(s=>s.ss.nom);
+    localStorage.setItem('mrc_result_softskills', JSON.stringify({
+      top3: top3,
+      forts: forts,
+      adev: adev,
+      resume: 'Top 3 : ' + top3.join(', ')
+    }));
+  } catch(e) {}
+
+    document.getElementById('resultat').style.display = 'block';
+  document.getElementById('btn-val').style.display = 'none';
+  document.getElementById('resultat').scrollIntoView({ behavior:'smooth' });
+}
+
+// =====================================================
+// RÉINIT
+// =====================================================
+function reinit() {
+  SS.forEach(ss => { rep[ss.id] = {}; });
+  totalRepondus = 0;
+  document.getElementById('resultat').style.display = 'none';
+  document.getElementById('btn-val').style.display = 'block';
+  document.getElementById('btn-val').disabled = true;
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('prog-label').textContent = '0 / 54 situations traitées';
+  renderQs();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+renderQs();
+</script>
+</body>
+</html>
