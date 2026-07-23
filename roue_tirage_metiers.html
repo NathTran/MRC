@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tirage au sort — Métiers MRC Option B</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #1a1a2e; color: #fff; min-height: 100vh;
+           display: flex; flex-direction: column; align-items: center; padding: 20px; }
+
+    h1 { font-size: 1.4em; margin-bottom: 4px; color: #e0e0ff; text-align: center; }
+    .subtitle { font-size: 0.83em; color: #aaa; margin-bottom: 24px; text-align: center; }
+
+    .main { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+
+    /* ROUE */
+    .roue-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .canvas-wrap { position: relative; }
+    canvas { border-radius: 50%; box-shadow: 0 0 40px rgba(100,100,255,0.3); }
+    .fleche {
+      position: absolute; top: 50%; right: -18px; transform: translateY(-50%);
+      width: 0; height: 0;
+      border-top: 18px solid transparent;
+      border-bottom: 18px solid transparent;
+      border-right: 36px solid #fff;
+      filter: drop-shadow(0 0 6px rgba(255,255,255,0.8));
+    }
+
+    .btn-spin {
+      padding: 13px 36px; border-radius: 30px; border: none; cursor: pointer;
+      font-size: 1.1em; font-weight: bold; background: #6c3fc5; color: #fff;
+      transition: background 0.2s, transform 0.1s; letter-spacing: 0.5px;
+    }
+    .btn-spin:hover:not(:disabled) { background: #5a32a3; transform: translateY(-2px); }
+    .btn-spin:disabled { background: #444; cursor: not-allowed; }
+
+    /* RÉSULTAT */
+    .resultat-zone { min-height: 80px; text-align: center; }
+    .resultat-card {
+      background: linear-gradient(135deg, #6c3fc5, #2c3e7a);
+      border-radius: 12px; padding: 16px 24px; min-width: 260px;
+      animation: pop 0.4s ease;
+    }
+    @keyframes pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .resultat-num { font-size: 0.8em; opacity: 0.8; margin-bottom: 4px; }
+    .resultat-metier { font-size: 1.2em; font-weight: bold; margin-bottom: 6px; }
+    .resultat-binome { font-size: 0.82em; opacity: 0.85; }
+    .warning { background: #c0392b; border-radius: 10px; padding: 10px 18px;
+               font-size: 0.88em; font-weight: bold; animation: pop 0.3s ease; }
+
+    /* PANNEAU DROITE */
+    .panel { display: flex; flex-direction: column; gap: 14px; min-width: 280px; max-width: 320px; }
+
+    /* COMPTEURS */
+    .compteurs { background: #16213e; border-radius: 10px; padding: 14px 16px; }
+    .compteurs h2 { font-size: 0.88em; color: #aaa; margin-bottom: 10px; }
+    .metier-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.82em; }
+    .metier-nom { flex: 1; color: #ddd; }
+    .dots { display: flex; gap: 4px; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; background: #333; border: 1.5px solid #555; }
+    .dot.used { background: #6c3fc5; border-color: #9b59b6; }
+    .dot.full { background: #e74c3c; border-color: #c0392b; }
+    .badge-full { font-size: 0.72em; background: #e74c3c; border-radius: 10px; padding: 1px 6px; }
+    .badge-once { font-size: 0.72em; background: #f39c12; border-radius: 10px; padding: 1px 6px; color: #000; }
+
+    /* HISTORIQUE */
+    .historique { background: #16213e; border-radius: 10px; padding: 14px 16px; flex: 1; }
+    .historique h2 { font-size: 0.88em; color: #aaa; margin-bottom: 10px; }
+    .histo-item { font-size: 0.8em; padding: 5px 8px; background: #0f3460; border-radius: 6px;
+                  margin-bottom: 5px; display: flex; justify-content: space-between; }
+    .histo-vide { font-size: 0.78em; color: #555; font-style: italic; }
+
+    /* RESET */
+    .btn-reset { background: #333; color: #aaa; border: 1px solid #555; border-radius: 20px;
+                 padding: 7px 16px; font-size: 0.82em; cursor: pointer; text-align: center; }
+    .btn-reset:hover { background: #444; }
+
+    /* Légende */
+    .legende { display: flex; gap: 14px; font-size: 0.75em; color: #aaa; justify-content: center; flex-wrap: wrap; }
+    .leg { display: flex; align-items: center; gap: 5px; }
+    .leg-dot { width: 12px; height: 12px; border-radius: 50%; }
+  </style>
+</head>
+<body>
+
+<h1>🎡 Tirage au sort — Métiers MRC Option B</h1>
+<p class="subtitle">Chaque métier peut être tiré au maximum 2 fois · Demi-groupe de 8 binômes</p>
+
+<div class="main">
+
+  <!-- ROUE -->
+  <div class="roue-wrap">
+    <div class="canvas-wrap">
+      <canvas id="roue" width="400" height="400"></canvas>
+      <div class="fleche"></div>
+    </div>
+    <div class="resultat-zone" id="resultat-zone"></div>
+    <button class="btn-spin" id="btn-spin" onclick="lancer()">🎰 Tirer au sort !</button>
+    <div class="legende">
+      <div class="leg"><div class="leg-dot" style="background:#6c3fc5"></div> Tiré 1 fois</div>
+      <div class="leg"><div class="leg-dot" style="background:#e74c3c"></div> Tiré 2 fois (complet)</div>
+      <div class="leg"><div class="leg-dot" style="background:#27ae60"></div> Pas encore tiré</div>
+    </div>
+  </div>
+
+  <!-- PANNEAU DROITE -->
+  <div class="panel">
+
+    <div class="compteurs">
+      <h2>📊 État des tirages</h2>
+      <div id="compteurs-list"></div>
+    </div>
+
+    <div class="historique">
+      <h2>📋 Historique des tirages</h2>
+      <div id="historique-list"><div class="histo-vide">Aucun tirage effectué</div></div>
+    </div>
+
+    <button class="btn-reset" onclick="reset()">🔄 Recommencer (effacer tous les tirages)</button>
+
+  </div>
+</div>
+
+<script>
+const METIERS = [
+  { nom: "Attaché(e) commercial(e)", court: "Attaché commercial", couleur: "#2980b9" },
+  { nom: "VRP / Représentant(e) commercial(e)", court: "VRP", couleur: "#8e44ad" },
+  { nom: "Conseiller(ère) relation client à distance", court: "Télévendeur(se)", couleur: "#e67e22" },
+  { nom: "Vendeur(se) à domicile (VDI)", court: "VDI", couleur: "#27ae60" },
+  { nom: "Technico-commercial(e)", court: "Technico-commercial", couleur: "#c0392b" },
+  { nom: "Chargé(e) de prospection", court: "Prospection", couleur: "#16a085" },
+  { nom: "Délégué(e) commercial(e) de secteur", court: "Délégué commercial", couleur: "#d35400" },
+  { nom: "Conseiller(ère) en vente directe / agence", court: "Vente en agence", couleur: "#2c3e50" },
+];
+
+const MAX_PAR_METIER = 2;
+let compteurs = METIERS.map(() => 0); // nb de fois tiré
+let historique = [];
+let enCours = false;
+let angleActuel = 0;
+
+const canvas = document.getElementById('roue');
+const ctx = canvas.getContext('2d');
+const W = canvas.width;
+const CX = W / 2;
+const R = W / 2 - 10;
+
+// Indices disponibles (pas encore complets)
+function dispo() {
+  return METIERS.map((_, i) => i).filter(i => compteurs[i] < MAX_PAR_METIER);
+}
+
+function couleurSegment(i) {
+  if (compteurs[i] >= MAX_PAR_METIER) return '#3a3a3a';
+  if (compteurs[i] === 1) return METIERS[i].couleur + 'aa';
+  return METIERS[i].couleur;
+}
+
+function dessinerRoue(angle) {
+  const n = METIERS.length;
+  const arc = (2 * Math.PI) / n;
+  ctx.clearRect(0, 0, W, W);
+
+  METIERS.forEach((m, i) => {
+    const debut = angle + i * arc;
+    const fin = debut + arc;
+    // Segment
+    ctx.beginPath();
+    ctx.moveTo(CX, CX);
+    ctx.arc(CX, CX, R, debut, fin);
+    ctx.closePath();
+    ctx.fillStyle = couleurSegment(i);
+    ctx.fill();
+    ctx.strokeStyle = '#1a1a2e';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Texte
+    ctx.save();
+    ctx.translate(CX, CX);
+    ctx.rotate(debut + arc / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = compteurs[i] >= MAX_PAR_METIER ? '#666' : '#fff';
+    ctx.font = `bold ${compteurs[i] >= MAX_PAR_METIER ? '11' : '12'}px Arial`;
+    const label = compteurs[i] >= MAX_PAR_METIER ? '🔒 ' + m.court : m.court;
+    ctx.fillText(label, R - 14, 5);
+    ctx.restore();
+  });
+
+  // Centre
+  ctx.beginPath();
+  ctx.arc(CX, CX, 24, 0, 2 * Math.PI);
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fill();
+  ctx.strokeStyle = '#6c3fc5';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('MRC', CX, CX + 5);
+}
+
+function updateCompteurs() {
+  const el = document.getElementById('compteurs-list');
+  el.innerHTML = METIERS.map((m, i) => {
+    const c = compteurs[i];
+    const dots = Array(MAX_PAR_METIER).fill(null).map((_, d) => {
+      const cls = d < c ? (c >= MAX_PAR_METIER ? 'dot full' : 'dot used') : 'dot';
+      return `<div class="${cls}"></div>`;
+    }).join('');
+    const badge = c >= MAX_PAR_METIER
+      ? '<span class="badge-full">Complet</span>'
+      : c === 1 ? '<span class="badge-once">1×</span>' : '';
+    return `<div class="metier-row">
+      <span class="metier-nom">${m.court}</span>
+      <div class="dots">${dots}</div>
+      ${badge}
+    </div>`;
+  }).join('');
+}
+
+function updateHistorique() {
+  const el = document.getElementById('historique-list');
+  if (historique.length === 0) {
+    el.innerHTML = '<div class="histo-vide">Aucun tirage effectué</div>';
+    return;
+  }
+  el.innerHTML = historique.slice().reverse().map((h, i) => `
+    <div class="histo-item">
+      <span>Tirage ${historique.length - i} — ${h.metier}</span>
+      <span style="opacity:0.6">${h.binome}</span>
+    </div>
+  `).join('');
+}
+
+function lancer() {
+  const d = dispo();
+  if (d.length === 0) {
+    document.getElementById('resultat-zone').innerHTML =
+      '<div class="warning">🎉 Tous les métiers ont été tirés 2 fois !</div>';
+    document.getElementById('btn-spin').disabled = true;
+    return;
+  }
+  if (enCours) return;
+  enCours = true;
+
+  // Choisir au hasard parmi les dispos
+  const idx = d[Math.floor(Math.random() * d.length)];
+  const n = METIERS.length;
+  const arc = (2 * Math.PI) / n;
+
+  // Angle cible : centrer sur le secteur idx, flèche à droite (angle 0 = droite)
+  // La flèche pointe à droite (angle π dans le repère canvas inversé)
+  // On veut que le milieu du secteur idx soit à droite
+  const angleMilieuSecteur = idx * arc + arc / 2;
+  const tours = 5 + Math.random() * 3; // 5 à 8 tours
+  const angleCible = -angleMilieuSecteur + tours * 2 * Math.PI;
+
+  const duree = 4000 + Math.random() * 1500;
+  const debut = performance.now();
+  const angleDepart = angleActuel;
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+  function animer(now) {
+    const t = Math.min((now - debut) / duree, 1);
+    angleActuel = angleDepart + angleCible * easeOut(t);
+    dessinerRoue(angleActuel);
+    if (t < 1) {
+      requestAnimationFrame(animer);
+    } else {
+      // Terminé
+      enCours = false;
+      compteurs[idx]++;
+      const binomeNum = historique.length + 1;
+      const binomeLabel = `Binôme ${binomeNum}`;
+      historique.push({ metier: METIERS[idx].court, binome: binomeLabel });
+
+      document.getElementById('resultat-zone').innerHTML = `
+        <div class="resultat-card">
+          <div class="resultat-num">Tirage n°${binomeNum}</div>
+          <div class="resultat-metier">🎯 ${METIERS[idx].nom}</div>
+          <div class="resultat-binome">${binomeLabel} · ${compteurs[idx]}/${MAX_PAR_METIER} fois tiré</div>
+        </div>`;
+
+      updateCompteurs();
+      updateHistorique();
+      dessinerRoue(angleActuel);
+
+      // Vérifier si tout est plein
+      if (dispo().length === 0) {
+        document.getElementById('btn-spin').disabled = true;
+      }
+    }
+  }
+
+  document.getElementById('resultat-zone').innerHTML = '';
+  requestAnimationFrame(animer);
+}
+
+function reset() {
+  if (!confirm('Effacer tous les tirages et recommencer ?')) return;
+  compteurs = METIERS.map(() => 0);
+  historique = [];
+  angleActuel = 0;
+  enCours = false;
+  document.getElementById('btn-spin').disabled = false;
+  document.getElementById('resultat-zone').innerHTML = '';
+  dessinerRoue(0);
+  updateCompteurs();
+  updateHistorique();
+}
+
+// Init
+dessinerRoue(0);
+updateCompteurs();
+updateHistorique();
+</script>
+</body>
+</html>
