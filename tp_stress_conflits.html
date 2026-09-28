@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TP — Gestion du stress et des conflits</title>
+<style>
+  :root{
+    --navy:#1f3a5f;
+    --navy-dark:#152944;
+    --accent:#2e7d6b;
+    --accent-light:#e4f2ef;
+    --bg:#f5f6f8;
+    --card:#ffffff;
+    --border:#dde1e7;
+    --text:#26303d;
+    --muted:#5b6470;
+    --warn-bg:#fdf3e7;
+    --warn-border:#e8b573;
+    --bad:#c0392b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Calibri, Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.5;
+  }
+  header{
+    background:linear-gradient(135deg,var(--navy),var(--navy-dark));
+    color:#fff;
+    padding:28px 24px 22px;
+    text-align:center;
+  }
+  header h1{margin:0 0 6px;font-size:1.6em;}
+  header p{margin:0;opacity:.85;font-size:.95em;}
+  .meta-bar{
+    display:flex;justify-content:center;gap:18px;flex-wrap:wrap;
+    margin-top:14px;font-size:.85em;
+  }
+  .meta-bar span{
+    background:rgba(255,255,255,.15);
+    padding:5px 12px;border-radius:20px;
+  }
+  nav.steps{
+    display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+    padding:14px 16px;background:#fff;border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:10;
+  }
+  nav.steps button{
+    border:1px solid var(--border);background:#fff;color:var(--navy);
+    padding:8px 14px;border-radius:20px;font-size:.85em;cursor:pointer;
+    font-weight:600;
+  }
+  nav.steps button.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  main{max-width:900px;margin:0 auto;padding:20px 16px 60px;}
+  .step{display:none;}
+  .step.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:12px;
+    padding:20px 22px;margin-bottom:18px;
+  }
+  .card h2{margin-top:0;color:var(--navy);font-size:1.25em;border-bottom:2px solid var(--accent-light);padding-bottom:8px;}
+  .card h3{color:var(--navy);font-size:1.05em;margin-bottom:6px;}
+  .context-box{
+    background:var(--accent-light);border-left:4px solid var(--accent);
+    padding:14px 16px;border-radius:6px;margin-bottom:16px;font-size:.95em;
+  }
+  .timer-hint{
+    display:inline-block;background:#eef1f5;color:var(--muted);
+    padding:3px 10px;border-radius:12px;font-size:.8em;margin-bottom:10px;
+  }
+  label{display:block;font-weight:600;margin:14px 0 6px;font-size:.92em;}
+  .sublabel{font-weight:400;color:var(--muted);font-size:.85em;margin:-2px 0 6px;}
+  textarea,input[type=text]{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;
+    font-family:inherit;font-size:.95em;resize:vertical;
+  }
+  textarea{min-height:60px;}
+  .field{margin-bottom:4px;}
+  .counter{font-size:.78em;color:var(--muted);margin-top:3px;text-align:right;}
+  .counter.ok{color:#1e7233;font-weight:600;}
+  .field.invalid textarea, .field.invalid input[type=text]{border-color:var(--bad);background:#fdf2f1;}
+  .quiz-q{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #eef0f3;}
+  .quiz-q:last-child{border-bottom:none;}
+  .opts{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+  .opts label{
+    font-weight:400;display:flex;align-items:center;gap:8px;
+    background:#f8f9fb;padding:8px 12px;border-radius:8px;cursor:pointer;
+    border:1px solid var(--border);margin:0;
+  }
+  .opts label:hover{background:var(--accent-light);}
+  .opts input{margin:0;}
+  .checklist{display:flex;flex-direction:column;gap:6px;margin:8px 0 14px;}
+  .checklist label{
+    font-weight:400;display:flex;align-items:flex-start;gap:8px;
+    background:#f8f9fb;padding:7px 10px;border-radius:6px;cursor:pointer;
+    border:1px solid var(--border);margin:0;font-size:.9em;
+  }
+  .checklist label:hover{background:var(--accent-light);}
+  .checklist input{margin-top:3px;}
+  .checklist .grp-title{
+    font-weight:700;color:var(--navy);font-size:.82em;margin:8px 0 2px;
+    text-transform:uppercase;letter-spacing:.02em;
+  }
+  .radio-row{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 12px;}
+  .radio-row label{
+    font-weight:400;display:flex;align-items:center;gap:6px;
+    background:#f8f9fb;padding:7px 12px;border-radius:20px;cursor:pointer;
+    border:1px solid var(--border);margin:0;font-size:.88em;
+  }
+  .radio-row label:hover{background:var(--accent-light);}
+  .feedback{
+    margin-top:8px;padding:8px 12px;border-radius:8px;font-size:.9em;display:none;
+  }
+  .feedback.ok{background:#e6f4ea;color:#1e7233;display:block;}
+  .feedback.ko{background:#fdeceb;color:#b3271c;display:block;}
+  .link-list a{color:var(--navy);font-weight:600;}
+  .link-list li{margin-bottom:6px;}
+  .situation{
+    background:#f8f9fb;border:1px solid var(--border);border-radius:8px;
+    padding:14px 16px;margin-bottom:14px;
+  }
+  .situation h4{margin:0 0 6px;color:var(--accent);font-size:1em;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:640px){.two-col{grid-template-columns:1fr;}}
+  .desc-grid{display:grid;grid-template-columns:60px 1fr;gap:10px;align-items:start;margin-top:10px;}
+  .desc-letter{
+    width:44px;height:44px;border-radius:50%;background:var(--navy);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1em;
+  }
+  .desc-check{
+    background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:8px;
+    padding:10px 14px;font-size:.85em;margin-top:16px;
+  }
+  .desc-check .checklist label{background:#fff;}
+  .qcm-case{
+    background:#f8f9fb;border:1px solid var(--border);border-radius:8px;
+    padding:14px 16px;margin-bottom:16px;
+  }
+  .qcm-case h4{margin:0 0 6px;color:var(--accent);font-size:1em;}
+  .qcm-row{display:grid;grid-template-columns:44px 1fr;gap:4px 10px;align-items:center;margin-top:8px;}
+  .qcm-row .qcm-fb{grid-column:2;margin-top:0;}
+  select.desc-select{
+    width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;
+    font-family:inherit;font-size:.92em;background:#fff;
+  }
+  select.desc-select.invalid{border-color:var(--bad);background:#fdf2f1;}
+  .qcm-fb{font-size:.8em;margin-top:4px;display:none;font-weight:600;}
+  .qcm-fb.ok{color:#1e7233;display:block;}
+  .qcm-fb.ko{color:#b3271c;display:block;}
+  .qcm-score{font-weight:700;margin-top:10px;}
+  .xw-wrap{overflow-x:auto;margin-bottom:16px;padding-bottom:4px;}
+  .xw-grid{display:inline-grid;gap:2px;background:var(--border);border:2px solid var(--navy);padding:2px;border-radius:4px;}
+  .xw-cell{
+    position:relative;width:34px;height:34px;
+  }
+  .xw-cell input{
+    width:100%;height:100%;border:1px solid var(--border);border-radius:2px;
+    text-align:center;text-transform:uppercase;font-weight:700;font-size:1em;
+    padding:0;background:#fff;
+  }
+  .xw-cell input.xw-ok{background:#e6f4ea;border-color:#1e7233;color:#1e7233;}
+  .xw-cell input.xw-ko{background:#fdeceb;border-color:#b3271c;color:#b3271c;}
+  .xw-cell .xw-label{
+    position:absolute;top:1px;left:2px;font-size:.55em;font-weight:700;color:var(--navy);
+    pointer-events:none;line-height:1;
+  }
+  .xw-empty{width:34px;height:34px;background:transparent;}
+  .xw-clues{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;}
+  @media (max-width:640px){.xw-clues{grid-template-columns:1fr;}}
+  .nav-buttons{display:flex;justify-content:space-between;align-items:center;margin-top:20px;gap:10px;flex-wrap:wrap;}
+  .btn{
+    background:var(--navy);color:#fff;border:none;padding:10px 20px;border-radius:8px;
+    cursor:pointer;font-size:.95em;font-weight:600;
+  }
+  .btn.secondary{background:#fff;color:var(--navy);border:1px solid var(--navy);}
+  .btn.accent{background:var(--accent);}
+  .skip-link{
+    background:none;border:none;color:var(--muted);font-size:.78em;
+    text-decoration:underline;cursor:pointer;padding:4px;
+  }
+  .validation-msg{
+    color:var(--bad);font-size:.85em;font-weight:600;margin-top:8px;display:none;
+  }
+  .save-status{
+    text-align:center;font-size:.8em;color:var(--muted);margin-top:8px;
+  }
+  .final-card{
+    border:2px solid var(--accent);border-radius:12px;padding:22px;background:#fff;
+  }
+  .final-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;}
+  @media (max-width:640px){.final-grid{grid-template-columns:1fr;} .desc-grid{grid-template-columns:40px 1fr;}}
+  .print-btn{
+    background:#fff;border:1px solid var(--navy);color:var(--navy);
+    padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;
+  }
+  footer{text-align:center;color:var(--muted);font-size:.8em;padding:20px;}
+  @media print{
+    nav.steps, .nav-buttons, .print-btn, header .meta-bar, .counter, .validation-msg{display:none!important;}
+    .step{display:block!important;}
+    body{background:#fff;}
+    .card{break-inside:avoid;border:1px solid #ccc;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TP — Gestion du stress et des conflits</h1>
+  <p>Seconde MRC · Suite du cours · Contexte : Delta Multimédia</p>
+  <div class="meta-bar">
+    <span>⏱ 2h30 - 2h50</span>
+    <span>💻 Travail individuel sur poste</span>
+    <span id="nameTag">👤 non renseigné</span>
+  </div>
+</header>
+
+<nav class="steps" id="stepsNav"></nav>
+
+<main>
+
+  <div class="step active" data-step="0">
+    <div class="card">
+      <h2>Avant de commencer</h2>
+      <label>Ton prénom et ta classe (pour retrouver ton travail sur ce poste) :</label>
+      <input type="text" id="studentName" placeholder="Ex : Lina — 2MRC1">
+      <div class="context-box">
+        <strong>Contexte professionnel : Delta Multimédia</strong><br>
+        Delta Multimédia est une enseigne spécialisée dans l'électroménager et le multimédia, présente dans une dizaine de magasins en France. Vous effectuez votre PFMP au service accueil / SAV du magasin de votre secteur, une équipe de 12 personnes (conseillers de vente, techniciens SAV, hôtes d'accueil) confrontée à une forte affluence en période de soldes et de fêtes, et à des clients parfois mécontents en cas de panne ou de retard de livraison.
+      </div>
+      <p>Ce TP prolonge le cours sur le stress et les conflits : vous allez retrouver le vocabulaire du cours dans une grille de mots croisés, rechercher des ressources officielles réelles, analyser de nouvelles situations chez Delta Multimédia, vous entraîner à la méthode DESC sur des cas clients inédits, puis construire votre fiche réflexe personnelle. Chaque question est guidée : répondez précisément, le nombre de mots minimum (ou les cases à compléter) est indiqué sous chaque champ.</p>
+      <div class="timer-hint">Étape 0 — 5 min</div>
+    </div>
+    <div class="nav-buttons">
+      <span></span>
+      <button class="btn" onclick="goStep(1)">Commencer →</button>
+    </div>
+  </div>
+
+  <div class="step" data-step="1">
+    <div class="card">
+      <h2>Étape 1 — Quiz de rappel</h2>
+      <div class="timer-hint">10 min</div>
+      <p>Avant de vous lancer, vérifiez que les notions du cours sont bien acquises. Une seule réponse correcte par question.</p>
+
+      <div class="quiz-q" data-correct="b">
+        <strong>1. Le stress qui pousse à se dépasser pour relever un défi ponctuel, sans effet négatif durable, est appelé :</strong>
+        <div class="opts">
+          <label><input type="radio" name="q1" value="a"> Le stress chronique</label>
+          <label><input type="radio" name="q1" value="b"> Le bon stress (stress stimulant)</label>
+          <label><input type="radio" name="q1" value="c"> Le burn-out</label>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz-q" data-correct="c">
+        <strong>2. Des douleurs au ventre, des troubles du sommeil et des maux de tête sont des symptômes de stress de type :</strong>
+        <div class="opts">
+          <label><input type="radio" name="q2" value="a"> Cognitifs</label>
+          <label><input type="radio" name="q2" value="b"> Comportementaux</label>
+          <label><input type="radio" name="q2" value="c"> Physiques</label>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz-q" data-correct="a">
+        <strong>3. Les risques psychosociaux (RPS) regroupent notamment :</strong>
+        <div class="opts">
+          <label><input type="radio" name="q3" value="a"> Le stress au travail, les violences internes et externes à l'entreprise</label>
+          <label><input type="radio" name="q3" value="b"> Uniquement les accidents du travail</label>
+          <label><input type="radio" name="q3" value="c"> Uniquement les problèmes liés au salaire</label>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz-q" data-correct="b">
+        <strong>4. Dans la méthode DESC, la lettre « E » correspond à :</strong>
+        <div class="opts">
+          <label><input type="radio" name="q4" value="a"> Écouter le client sans rien dire</label>
+          <label><input type="radio" name="q4" value="b"> Exprimer son ressenti (faire preuve d'empathie)</label>
+          <label><input type="radio" name="q4" value="c"> Écrire un rapport après l'incident</label>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="quiz-q" data-correct="c">
+        <strong>5. Un salarié en conflit avec son employeur depuis plusieurs mois, sans solution trouvée en interne, doit plutôt s'adresser :</strong>
+        <div class="opts">
+          <label><input type="radio" name="q5" value="a"> À son médecin traitant uniquement</label>
+          <label><input type="radio" name="q5" value="b"> À un collègue de confiance uniquement</label>
+          <label><input type="radio" name="q5" value="c"> À un interlocuteur externe (inspection du travail, syndicat, avocat)</label>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <button class="btn secondary" onclick="checkQuiz()">Vérifier mes réponses</button>
+      <div id="quizScore" style="margin-top:10px;font-weight:600;"></div>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn secondary" onclick="goStep(0)">← Retour</button>
+      <button class="btn" onclick="tryNext(1,2)">Étape suivante →</button>
+    </div>
+  </div>
+
+  <div class="step" data-step="2">
+    <div class="card">
+      <h2>Étape 2 — Mots croisés : le vocabulaire du stress et des conflits</h2>
+      <div class="timer-hint">18 min</div>
+      <p>Complétez la grille à partir des définitions. Tapez une lettre par case (majuscules, sans accent). Cliquez sur « Vérifier la grille » pour voir les cases correctes en vert et les erreurs en rouge.</p>
+
+      <div class="xw-wrap">
+        <div id="xwGrid" class="xw-grid"></div>
+      </div>
+
+      <div class="xw-clues">
+        <div>
+          <h3 style="margin-bottom:4px;">Horizontal</h3>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>1</strong> Homme de loi qui peut conseiller ou représenter en justice un salarié victime de harcèlement.</p>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>2</strong> Il palpite et s'emballe dans les moments de stress.</p>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>3</strong> Il peut varier à la hausse ou à la baisse en cas de stress chronique.</p>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>4</strong> Symptômes liés au stress qui comprennent les difficultés de concentration, erreurs, oublis...</p>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>5</strong> Boisson chaude à éviter, car elle contient un excitant nommé caféine.</p>
+        </div>
+        <div>
+          <h3 style="margin-bottom:4px;">Vertical</h3>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>A</strong> Stress qui s'installe dans la durée.</p>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>B</strong> Méthode de communication non violente permettant de désamorcer un conflit.</p>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>C</strong> Personne à consulter en cas de retentissement du stress sur la santé.</p>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>D</strong> Synonymes de douleurs, ils font partie des signes physiques du stress.</p>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>E</strong> Comprend les risques liés au stress et le harcèlement au travail.</p>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>F</strong> Problème relationnel entre plusieurs personnes qui peut dégénérer.</p>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>G</strong> Troubles musculo-squelettiques.</p>
+          <p class="sublabel" style="margin:0 0 6px;"><strong>H</strong> Sa pratique régulière permet de se dépenser et de prévenir le stress.</p>
+        </div>
+      </div>
+
+      <button class="btn secondary" onclick="checkCrossword()">Vérifier la grille</button>
+      <div class="qcm-score" id="xwScore"></div>
+    </div>
+    <div class="validation-msg" id="msg2">Complète toutes les cases de la grille avant de continuer.</div>
+    <div class="nav-buttons">
+      <button class="btn secondary" onclick="goStep(1)">← Retour</button>
+      <button class="btn" onclick="tryNext(2,3)">Étape suivante →</button>
+    </div>
+  </div>
+
+  <div class="step" data-step="3">
+    <div class="card">
+      <h2>Étape 3 — Recherche documentaire (sources officielles)</h2>
+      <div class="timer-hint">30 min</div>
+      <p>Utilisez votre navigateur pour consulter ces sites officiels. Répondez avec vos propres mots (pas de copier-coller) — chaque champ indique la longueur minimum attendue.</p>
+      <ul class="link-list">
+        <li><a href="https://www.ameli.fr/entreprise/sante-travail/risques/risques-psychosociaux-rps" target="_blank">ameli.fr — Risques psychosociaux (RPS)</a></li>
+        <li><a href="https://www.inrs.fr/risques/stress/ce-qu-il-faut-retenir.html" target="_blank">INRS — Le stress au travail</a></li>
+        <li><a href="https://3114.fr" target="_blank">3114.fr — Numéro national de prévention du suicide</a></li>
+      </ul>
+
+      <label>Sur ameli.fr, retrouvez la définition officielle des RPS et reformulez-la avec vos mots :</label>
+      <div class="sublabel">Consigne : votre phrase doit contenir au moins « santé », « travail » et « conditions ».</div>
+      <div class="field" data-min="15">
+        <textarea data-key="rps_def" placeholder="Les risques psychosociaux sont..."></textarea>
+        <div class="counter">0 / 15 mots</div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <label>Sur l'INRS, 1<sup>re</sup> conséquence du stress chronique sur la santé :</label>
+          <div class="field" data-min="4">
+            <input type="text" data-key="inrs_conseq1" placeholder="Ex : troubles du sommeil">
+            <div class="counter">0 / 4 mots</div>
+          </div>
+        </div>
+        <div>
+          <label>2<sup>e</sup> conséquence, différente de la première :</label>
+          <div class="field" data-min="4">
+            <input type="text" data-key="inrs_conseq2" placeholder="Ex : troubles cardiovasculaires">
+            <div class="counter">0 / 4 mots</div>
+          </div>
+        </div>
+      </div>
+
+      <label>Le 3114 : à qui s'adresse ce numéro, et pour quel type de situation peut-on l'appeler ?</label>
+      <div class="sublabel">Précisez : gratuit ou payant ? accessible quand ? pour la personne en détresse seulement, ou aussi pour son entourage ?</div>
+      <div class="field" data-min="20">
+        <textarea data-key="num_3114" placeholder="Le 3114 est un numéro..."></textarea>
+        <div class="counter">0 / 20 mots</div>
+      </div>
+
+      <label>En tant que futur professionnel de la relation client, donnez une situation concrète où connaître ces ressources vous serait utile :</label>
+      <div class="sublabel">Exemple de structure : « Si un collègue... alors je pourrais... »</div>
+      <div class="field" data-min="15">
+        <textarea data-key="pourquoi_ressources" placeholder="Si un collègue..."></textarea>
+        <div class="counter">0 / 15 mots</div>
+      </div>
+    </div>
+    <div class="validation-msg" id="msg3">Complète les champs surlignés en rouge (longueur minimum) avant de continuer.</div>
+    <div class="nav-buttons">
+      <button class="btn secondary" onclick="goStep(2)">← Retour</button>
+      <button class="btn" onclick="tryNext(3,4)">Étape suivante →</button>
+    </div>
+  </div>
+
+  <div class="step" data-step="4">
+    <div class="card">
+      <h2>Étape 4 — Étude de cas : l'équipe Delta Multimédia</h2>
+      <div class="timer-hint">40 min</div>
+      <p>Trois membres de l'équipe rencontrent des difficultés. Pour chacun, répondez aux 4 sous-questions guidées dans l'ordre : elles vous aident à construire une analyse complète.</p>
+
+      <div class="situation">
+        <h4>Situation 1 — Karim, technicien SAV</h4>
+        <p>Karim enchaîne les réparations depuis plusieurs semaines sans renfort d'équipe, malgré une hausse des retours produits liée aux soldes. Il a évoqué sa fatigue à son responsable, qui lui a répondu qu'il fallait « tenir jusqu'à la fin de la période ». Karim dort mal, saute des repas et fait de plus en plus d'erreurs de diagnostic.</p>
+
+        <label>1. Ce problème relève surtout :</label>
+        <div class="radio-row">
+          <label><input type="radio" name="karim_type" value="stress"> du stress au travail</label>
+          <label><input type="radio" name="karim_type" value="conflit"> d'un conflit</label>
+          <label><input type="radio" name="karim_type" value="deux"> des deux</label>
+        </div>
+
+        <label>2. Quel(s) interlocuteur(s) mobiliser ? (cochez-en au moins un)</label>
+        <div class="checklist" data-group="karim_interloc">
+          <div class="grp-title">À l'intérieur de l'entreprise</div>
+          <label><input type="checkbox" value="responsable"> Son responsable / manager</label>
+          <label><input type="checkbox" value="rh"> Le service RH</label>
+          <label><input type="checkbox" value="collegue"> Un collègue de confiance</label>
+          <label><input type="checkbox" value="representants"> Les représentants du personnel</label>
+          <div class="grp-title">À l'extérieur de l'entreprise</div>
+          <label><input type="checkbox" value="medtravail"> Le médecin du travail</label>
+          <label><input type="checkbox" value="medtraitant"> Le médecin traitant</label>
+          <label><input type="checkbox" value="inspection"> L'inspection du travail</label>
+          <label><input type="checkbox" value="syndicat"> Un syndicat</label>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <label>3. Depuis combien de temps dure la situation ?</label>
+            <div class="field" data-min="2">
+              <input type="text" data-key="karim_duree" placeholder="Ex : plusieurs semaines">
+              <div class="counter">0 / 2 mots</div>
+            </div>
+          </div>
+          <div>
+            <label>4. Une démarche interne a-t-elle déjà été tentée ? Laquelle ?</label>
+            <div class="field" data-min="5">
+              <input type="text" data-key="karim_demarche" placeholder="Ex : il en a parlé à son responsable, sans effet">
+              <div class="counter">0 / 5 mots</div>
+            </div>
+          </div>
+        </div>
+
+        <label>5. Justifiez votre choix d'interlocuteur(s) en une phrase :</label>
+        <div class="sublabel">Appuyez-vous sur vos réponses 3 et 4 ci-dessus.</div>
+        <div class="field" data-min="12">
+          <textarea data-key="karim_justif" placeholder="Je choisis... car..."></textarea>
+          <div class="counter">0 / 12 mots</div>
+        </div>
+      </div>
+
+      <div class="situation">
+        <h4>Situation 2 — Léa et Yanis, conseillers de vente</h4>
+        <p>Léa et Yanis sont en désaccord depuis deux jours sur la répartition des commissions d'une vente réalisée à deux. Le ton est monté, ils s'évitent depuis et l'ambiance dans l'équipe s'en ressent.</p>
+
+        <label>1. Ce problème relève surtout :</label>
+        <div class="radio-row">
+          <label><input type="radio" name="lea_type" value="stress"> du stress au travail</label>
+          <label><input type="radio" name="lea_type" value="conflit"> d'un conflit</label>
+          <label><input type="radio" name="lea_type" value="deux"> des deux</label>
+        </div>
+
+        <label>2. Quel(s) interlocuteur(s) mobiliser ? (cochez-en au moins un)</label>
+        <div class="checklist" data-group="lea_interloc">
+          <div class="grp-title">À l'intérieur de l'entreprise</div>
+          <label><input type="checkbox" value="responsable"> Le responsable / manager</label>
+          <label><input type="checkbox" value="rh"> Le service RH</label>
+          <label><input type="checkbox" value="collegue"> Un collègue de confiance</label>
+          <label><input type="checkbox" value="representants"> Les représentants du personnel</label>
+          <div class="grp-title">À l'extérieur de l'entreprise</div>
+          <label><input type="checkbox" value="medtravail"> Le médecin du travail</label>
+          <label><input type="checkbox" value="inspection"> L'inspection du travail</label>
+          <label><input type="checkbox" value="syndicat"> Un syndicat</label>
+          <label><input type="checkbox" value="avocat"> Un avocat</label>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <label>3. Depuis combien de temps dure la situation ?</label>
+            <div class="field" data-min="2">
+              <input type="text" data-key="lea_duree" placeholder="Ex : deux jours">
+              <div class="counter">0 / 2 mots</div>
+            </div>
+          </div>
+          <div>
+            <label>4. Une démarche interne a-t-elle déjà été tentée ? Laquelle ?</label>
+            <div class="field" data-min="3">
+              <input type="text" data-key="lea_demarche" placeholder="Ex : aucune démarche pour l'instant">
+              <div class="counter">0 / 3 mots</div>
+            </div>
+          </div>
+        </div>
+
+        <label>5. Justifiez votre choix d'interlocuteur(s) en une phrase :</label>
+        <div class="field" data-min="12">
+          <textarea data-key="lea_justif" placeholder="Je choisis... car..."></textarea>
+          <div class="counter">0 / 12 mots</div>
+        </div>
+      </div>
+
+      <div class="situation">
+        <h4>Situation 3 — Nadia, hôte d'accueil</h4>
+        <p>Nadia estime que ses horaires ont été modifiés à plusieurs reprises sans son accord et sans respecter le délai prévu par son contrat. Elle en a discuté avec son manager par mail, sans obtenir de réponse satisfaisante depuis trois semaines. Cela crée une tension financière car ses gardes d'enfant ne sont plus adaptées.</p>
+
+        <label>1. Ce problème relève surtout :</label>
+        <div class="radio-row">
+          <label><input type="radio" name="nadia_type" value="stress"> du stress au travail</label>
+          <label><input type="radio" name="nadia_type" value="conflit"> d'un conflit</label>
+          <label><input type="radio" name="nadia_type" value="deux"> des deux</label>
+        </div>
+
+        <label>2. Quel(s) interlocuteur(s) mobiliser ? (cochez-en au moins un)</label>
+        <div class="checklist" data-group="nadia_interloc">
+          <div class="grp-title">À l'intérieur de l'entreprise</div>
+          <label><input type="checkbox" value="responsable"> Le responsable / manager</label>
+          <label><input type="checkbox" value="rh"> Le service RH</label>
+          <label><input type="checkbox" value="representants"> Les représentants du personnel</label>
+          <div class="grp-title">À l'extérieur de l'entreprise</div>
+          <label><input type="checkbox" value="inspection"> L'inspection du travail</label>
+          <label><input type="checkbox" value="syndicat"> Un syndicat</label>
+          <label><input type="checkbox" value="avocat"> Un avocat</label>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <label>3. Depuis combien de temps dure la situation ?</label>
+            <div class="field" data-min="2">
+              <input type="text" data-key="nadia_duree" placeholder="Ex : trois semaines">
+              <div class="counter">0 / 2 mots</div>
+            </div>
+          </div>
+          <div>
+            <label>4. Une démarche interne a-t-elle déjà été tentée ? Laquelle ?</label>
+            <div class="field" data-min="5">
+              <input type="text" data-key="nadia_demarche" placeholder="Ex : un mail envoyé au manager, resté sans réponse">
+              <div class="counter">0 / 5 mots</div>
+            </div>
+          </div>
+        </div>
+
+        <label>5. Justifiez votre choix d'interlocuteur(s) en une phrase :</label>
+        <div class="field" data-min="12">
+          <textarea data-key="nadia_justif" placeholder="Je choisis... car..."></textarea>
+          <div class="counter">0 / 12 mots</div>
+        </div>
+      </div>
+    </div>
+    <div class="validation-msg" id="msg4">Complète les champs surlignés en rouge (radio, case à cocher ou longueur minimum) avant de continuer.</div>
+    <div class="nav-buttons">
+      <button class="btn secondary" onclick="goStep(3)">← Retour</button>
+      <button class="btn" onclick="tryNext(4,5)">Étape suivante →</button>
+    </div>
+  </div>
+
+  <div class="step" data-step="5">
+    <div class="card">
+      <h2>Étape 5 — Simulateur DESC : deux clients à gérer</h2>
+      <div class="timer-hint">30 min</div>
+      <p>Pour chaque situation, rédigez votre réponse en suivant les 4 étapes de la méthode DESC. Chaque champ a une amorce à compléter et une longueur minimum — ne vous contentez pas d'une phrase toute faite.</p>
+
+      <div class="situation">
+        <h4>Cas A — Retard de livraison</h4>
+        <p>Un client vous appelle : il devait recevoir son réfrigérateur ce matin, il a pris sa journée de congé pour être présent, et personne ne s'est présenté. Il est agacé et hausse le ton.</p>
+        <div class="desc-grid">
+          <div class="desc-letter">D</div>
+          <div>
+            <label style="margin-top:0;">Décrire les faits, sans jugement, en terminant par une question de confirmation</label>
+            <div class="field" data-min="10"><textarea data-key="descA_D" placeholder="Vous deviez être livré ce matin et..."></textarea><div class="counter">0 / 10 mots</div></div>
+          </div>
+          <div class="desc-letter">E</div>
+          <div>
+            <label style="margin-top:0;">Exprimer un ressenti sincère (pas juste « désolé »)</label>
+            <div class="field" data-min="8"><textarea data-key="descA_E" placeholder="Je comprends que..."></textarea><div class="counter">0 / 8 mots</div></div>
+          </div>
+          <div class="desc-letter">S</div>
+          <div>
+            <label style="margin-top:0;">Proposer une solution concrète, avec un délai</label>
+            <div class="field" data-min="10"><textarea data-key="descA_S" placeholder="Je vous propose de..."></textarea><div class="counter">0 / 10 mots</div></div>
+          </div>
+          <div class="desc-letter">C</div>
+          <div>
+            <label style="margin-top:0;">Conclure en rassurant sur la suite</label>
+            <div class="field" data-min="6"><textarea data-key="descA_C" placeholder="Ainsi, vous..."></textarea><div class="counter">0 / 6 mots</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="situation">
+        <h4>Cas B — Erreur de facturation</h4>
+        <p>Une cliente se présente à l'accueil : elle a été débitée deux fois pour le même achat d'un lave-linge. Elle est venue avec son relevé bancaire imprimé et se montre méfiante, pensant que c'est fait exprès.</p>
+        <div class="desc-grid">
+          <div class="desc-letter">D</div>
+          <div>
+            <label style="margin-top:0;">Décrire les faits, sans jugement</label>
+            <div class="field" data-min="10"><textarea data-key="descB_D" placeholder="Vous avez été débitée deux fois pour..."></textarea><div class="counter">0 / 10 mots</div></div>
+          </div>
+          <div class="desc-letter">E</div>
+          <div>
+            <label style="margin-top:0;">Exprimer un ressenti sincère</label>
+            <div class="field" data-min="8"><textarea data-key="descB_E" placeholder="Je comprends que..."></textarea><div class="counter">0 / 8 mots</div></div>
+          </div>
+          <div class="desc-letter">S</div>
+          <div>
+            <label style="margin-top:0;">Proposer une solution concrète, avec un délai</label>
+            <div class="field" data-min="10"><textarea data-key="descB_S" placeholder="Je vérifie immédiatement et je..."></textarea><div class="counter">0 / 10 mots</div></div>
+          </div>
+          <div class="desc-letter">C</div>
+          <div>
+            <label style="margin-top:0;">Conclure en rassurant sur la suite</label>
+            <div class="field" data-min="6"><textarea data-key="descB_C" placeholder="Ainsi, vous..."></textarea><div class="counter">0 / 6 mots</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="desc-check">
+        <strong>Auto-contrôle : cochez chaque case une fois vérifiée (obligatoire pour continuer)</strong>
+        <div class="checklist" data-group="desc_check">
+          <label><input type="checkbox" value="c1"> Mes deux « D » ne contiennent aucune accusation ni jugement envers le client.</label>
+          <label><input type="checkbox" value="c2"> Mes deux « E » expriment une vraie empathie, pas une formule automatique répétée à l'identique.</label>
+          <label><input type="checkbox" value="c3"> Mes deux « S » proposent une action concrète et réaliste pour un conseiller Delta Multimédia, avec un délai.</label>
+          <label><input type="checkbox" value="c4"> Mes deux « C » rassurent le client sur la suite, sans être une simple formule de politesse.</label>
+        </div>
+      </div>
+    </div>
+    <div class="validation-msg" id="msg5">Complète les champs surlignés en rouge et coche les 4 cases d'auto-contrôle avant de continuer.</div>
+    <div class="nav-buttons">
+      <button class="btn secondary" onclick="goStep(4)">← Retour</button>
+      <button class="btn" onclick="tryNext(5,6)">Étape suivante →</button>
+    </div>
+  </div>
+
+  <div class="step" data-step="6">
+    <div class="card">
+      <h2>Étape 6 — DESC : repérer la bonne formulation</h2>
+      <div class="timer-hint">20 min</div>
+      <p>Pour chaque cas, choisissez dans la liste déroulante la <strong>meilleure</strong> formulation pour chaque lettre D/E/S/C (une seule bonne réponse à chaque fois — les autres proposent un jugement, une réponse trop vague, ou une solution irréaliste). Cliquez sur « Vérifier mes réponses » pour voir votre score.</p>
+
+      <div class="qcm-case">
+        <h4>Cas C — Produit défectueux, échange refusé en rayon</h4>
+        <p>Un client revient avec une tablette qui ne s'allume plus, achetée il y a trois semaines. Le vendeur du rayon lui a dit qu'il ne pouvait « rien faire » et l'a renvoyé sans explication. Le client s'énerve à l'accueil SAV.</p>
+
+        <div class="qcm-row"><div class="desc-letter" style="width:36px;height:36px;font-size:.95em;">D</div>
+          <select class="desc-select" data-key="qcmC_D" data-correct="b">
+            <option value="">— Choisir la meilleure formulation —</option>
+            <option value="a">« Vous dites que le vendeur n'a pas voulu vous aider ? »</option>
+            <option value="b">« Votre tablette ne s'allume plus, achetée il y a trois semaines, et vous n'avez pas eu de solution en rayon, c'est bien cela ? »</option>
+            <option value="c">« C'est vrai que le rayon est parfois débordé. »</option>
+            <option value="d">« Vous auriez dû garder votre ticket de caisse. »</option>
+          </select>
+          <div class="qcm-fb"></div>
+        </div>
+        <div class="qcm-row"><div class="desc-letter" style="width:36px;height:36px;font-size:.95em;">E</div>
+          <select class="desc-select" data-key="qcmC_E" data-correct="b">
+            <option value="">— Choisir la meilleure formulation —</option>
+            <option value="a">« Désolé. »</option>
+            <option value="b">« Je comprends que ce soit frustrant d'être renvoyé sans solution après un achat récent. »</option>
+            <option value="c">« Ça arrive à tout le monde. »</option>
+            <option value="d">« Le vendeur avait sûrement ses raisons. »</option>
+          </select>
+          <div class="qcm-fb"></div>
+        </div>
+        <div class="qcm-row"><div class="desc-letter" style="width:36px;height:36px;font-size:.95em;">S</div>
+          <select class="desc-select" data-key="qcmC_S" data-correct="b">
+            <option value="">— Choisir la meilleure formulation —</option>
+            <option value="a">« Je vais voir ce que je peux faire. »</option>
+            <option value="b">« Je teste votre tablette tout de suite et, si le défaut est confirmé, je vous propose un échange ou un remboursement sous 24h. »</option>
+            <option value="c">« Revenez demain, quelqu'un d'autre s'en occupera. »</option>
+            <option value="d">« Il faut d'abord appeler le fabricant vous-même. »</option>
+          </select>
+          <div class="qcm-fb"></div>
+        </div>
+        <div class="qcm-row"><div class="desc-letter" style="width:36px;height:36px;font-size:.95em;">C</div>
+          <select class="desc-select" data-key="qcmC_C" data-correct="b">
+            <option value="">— Choisir la meilleure formulation —</option>
+            <option value="a">« Voilà, bonne journée. »</option>
+            <option value="b">« Ainsi, vous repartirez avec une tablette qui fonctionne ou remboursé, sans nouvelle démarche de votre part. »</option>
+            <option value="c">« J'espère que ça ira mieux la prochaine fois. »</option>
+            <option value="d">« Ne vous inquiétez pas. »</option>
+          </select>
+          <div class="qcm-fb"></div>
+        </div>
+      </div>
+
+      <div class="qcm-case">
+        <h4>Cas D — Attente en caisse, avis négatif posté sur place</h4>
+        <p>Un client attend 20 minutes en caisse un samedi après-midi (une seule caisse ouverte pour cause d'absence). Il sort son téléphone et poste un avis 1 étoile devant la vendeuse en disant qu'il va « prévenir tout le quartier ».</p>
+
+        <div class="qcm-row"><div class="desc-letter" style="width:36px;height:36px;font-size:.95em;">D</div>
+          <select class="desc-select" data-key="qcmD_D" data-correct="b">
+            <option value="">— Choisir la meilleure formulation —</option>
+            <option value="a">« Vous n'auriez pas dû poster cet avis avant de nous en parler. »</option>
+            <option value="b">« Vous attendez depuis 20 minutes car une seule caisse est ouverte aujourd'hui, c'est bien ça ? »</option>
+            <option value="c">« Un avis Google ne change rien pour nous. »</option>
+            <option value="d">« Les clients se plaignent tout le temps du samedi. »</option>
+          </select>
+          <div class="qcm-fb"></div>
+        </div>
+        <div class="qcm-row"><div class="desc-letter" style="width:36px;height:36px;font-size:.95em;">E</div>
+          <select class="desc-select" data-key="qcmD_E" data-correct="b">
+            <option value="">— Choisir la meilleure formulation —</option>
+            <option value="a">« Ce n'est pas grave. »</option>
+            <option value="b">« Je comprends que cette attente soit agaçante, surtout un samedi où vous êtes pressé. »</option>
+            <option value="c">« Vous n'êtes pas le seul à attendre. »</option>
+            <option value="d">« Les avis négatifs ne m'atteignent pas. »</option>
+          </select>
+          <div class="qcm-fb"></div>
+        </div>
+        <div class="qcm-row"><div class="desc-letter" style="width:36px;height:36px;font-size:.95em;">S</div>
+          <select class="desc-select" data-key="qcmD_S" data-correct="b">
+            <option value="">— Choisir la meilleure formulation —</option>
+            <option value="a">« On ne peut rien faire, il faut attendre son tour. »</option>
+            <option value="b">« J'ouvre une deuxième caisse immédiatement pour réduire l'attente. »</option>
+            <option value="c">« Revenez un autre jour, ce sera plus calme. »</option>
+            <option value="d">« Postez plutôt un avis positif si ça va mieux après. »</option>
+          </select>
+          <div class="qcm-fb"></div>
+        </div>
+        <div class="qcm-row"><div class="desc-letter" style="width:36px;height:36px;font-size:.95em;">C</div>
+          <select class="desc-select" data-key="qcmD_C" data-correct="b">
+            <option value="">— Choisir la meilleure formulation —</option>
+            <option value="a">« Merci de votre visite. »</option>
+            <option value="b">« Ainsi, votre attente sera écourtée dès maintenant grâce à l'ouverture de cette caisse. »</option>
+            <option value="c">« Espérons que la prochaine fois sera plus rapide. »</option>
+            <option value="d">« Ne postez pas d'avis négatif, s'il vous plaît. »</option>
+          </select>
+          <div class="qcm-fb"></div>
+        </div>
+      </div>
+
+      <div class="qcm-case">
+        <h4>Cas E — Colis endommagé à la livraison</h4>
+        <p>Un client reçoit son four encastrable avec la porte fissurée, visible dès l'ouverture du carton. Il appelle le SAV très en colère, menaçant de ne plus jamais commander chez Delta Multimédia et de « le dire sur les réseaux ».</p>
+
+        <div class="qcm-row"><div class="desc-letter" style="width:36px;height:36px;font-size:.95em;">D</div>
+          <select class="desc-select" data-key="qcmE_D" data-correct="b">
+            <option value="">— Choisir la meilleure formulation —</option>
+            <option value="a">« Vous exagérez peut-être un peu sur la fissure. »</option>
+            <option value="b">« Votre four est arrivé avec la porte fissurée dès l'ouverture du carton, c'est bien ce que vous constatez ? »</option>
+            <option value="c">« C'est le transporteur qui est responsable, pas nous. »</option>
+            <option value="d">« Vous auriez dû vérifier le colis devant le livreur. »</option>
+          </select>
+          <div class="qcm-fb"></div>
+        </div>
+        <div class="qcm-row"><div class="desc-letter" style="width:36px;height:36px;font-size:.95em;">E</div>
+          <select class="desc-select" data-key="qcmE_E" data-correct="a">
+            <option value="">— Choisir la meilleure formulation —</option>
+            <option value="a">« Je comprends votre colère, recevoir un appareil endommagé après l'attente d'une livraison est vraiment décevant. »</option>
+            <option value="b">« Calmez-vous, ça arrive. »</option>
+            <option value="c">« Ce n'est qu'une porte, le four fonctionne sûrement. »</option>
+            <option value="d">« Je suis désolé. »</option>
+          </select>
+          <div class="qcm-fb"></div>
+        </div>
+        <div class="qcm-row"><div class="desc-letter" style="width:36px;height:36px;font-size:.95em;">S</div>
+          <select class="desc-select" data-key="qcmE_S" data-correct="a">
+            <option value="">— Choisir la meilleure formulation —</option>
+            <option value="a">« Je lance immédiatement un échange standard sous 48h, avec enlèvement du four endommagé à la livraison du nouveau. »</option>
+            <option value="b">« Contactez le transporteur directement. »</option>
+            <option value="c">« On verra ce qu'on peut faire la semaine prochaine. »</option>
+            <option value="d">« Renvoyez-le nous par la poste à vos frais. »</option>
+          </select>
+          <div class="qcm-fb"></div>
+        </div>
+        <div class="qcm-row"><div class="desc-letter" style="width:36px;height:36px;font-size:.95em;">C</div>
+          <select class="desc-select" data-key="qcmE_C" data-correct="a">
+            <option value="">— Choisir la meilleure formulation —</option>
+            <option value="a">« Ainsi, vous recevrez un four neuf sous 48h sans démarche supplémentaire de votre part. »</option>
+            <option value="b">« Voilà, on a fait le nécessaire. »</option>
+            <option value="c">« J'espère ne plus avoir affaire à ce genre de souci. »</option>
+            <option value="d">« Merci de votre compréhension. »</option>
+          </select>
+          <div class="qcm-fb"></div>
+        </div>
+      </div>
+
+      <button class="btn secondary" onclick="checkDescQcm()">Vérifier mes réponses</button>
+      <div class="qcm-score" id="qcmScore"></div>
+    </div>
+    <div class="validation-msg" id="msg6">Choisis une réponse dans chaque liste déroulante avant de continuer.</div>
+    <div class="nav-buttons">
+      <button class="btn secondary" onclick="goStep(5)">← Retour</button>
+      <button class="btn" onclick="tryNext(6,7)">Étape suivante →</button>
+    </div>
+  </div>
+
+  <div class="step" data-step="7">
+    <div class="final-card">
+      <h2 style="margin-top:0;color:var(--navy);">Étape 7 — Ma fiche réflexe anti-stress et anti-conflit</h2>
+      <div class="timer-hint">15 min</div>
+      <p>Pour terminer, construisez votre fiche personnelle de synthèse, que vous pourrez réutiliser en PFMP. Donnez 3 réflexes bien distincts, pas 3 formulations d'une même idée.</p>
+
+      <label>Si je ressens du stress au travail, mes 3 premiers réflexes (un par ligne, tous différents) :</label>
+      <div class="two-col" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="field" data-min="2"><input type="text" data-key="reflexe1" placeholder="Réflexe 1"><div class="counter">0 / 2 mots</div></div>
+        <div class="field" data-min="2"><input type="text" data-key="reflexe2" placeholder="Réflexe 2"><div class="counter">0 / 2 mots</div></div>
+        <div class="field" data-min="2"><input type="text" data-key="reflexe3" placeholder="Réflexe 3"><div class="counter">0 / 2 mots</div></div>
+      </div>
+
+      <div class="final-grid">
+        <div>
+          <label style="margin-top:0;">Si je suis témoin ou victime d'un conflit, qui contacter en priorité en interne, et pourquoi ce choix ?</label>
+          <div class="field" data-min="10"><textarea data-key="fiche_interne" placeholder="Je contacte... car..."></textarea><div class="counter">0 / 10 mots</div></div>
+        </div>
+        <div>
+          <label style="margin-top:0;">Si la situation persiste malgré une démarche interne, quelle ressource externe mobiliser, et dans quel cas ?</label>
+          <div class="field" data-min="10"><textarea data-key="fiche_externe" placeholder="Je peux contacter..."></textarea><div class="counter">0 / 10 mots</div></div>
+        </div>
+      </div>
+
+      <label>Les 4 lettres de la méthode DESC, dans l'ordre, en une phrase chacune, avec vos propres mots :</label>
+      <div class="field" data-min="4"><input type="text" data-key="fiche_desc_d" placeholder="D = "><div class="counter">0 / 4 mots</div></div>
+      <div class="field" data-min="4"><input type="text" data-key="fiche_desc_e" placeholder="E = "><div class="counter">0 / 4 mots</div></div>
+      <div class="field" data-min="4"><input type="text" data-key="fiche_desc_s" placeholder="S = "><div class="counter">0 / 4 mots</div></div>
+      <div class="field" data-min="4"><input type="text" data-key="fiche_desc_c" placeholder="C = "><div class="counter">0 / 4 mots</div></div>
+
+      <div style="text-align:center;margin-top:20px;">
+        <button class="print-btn" onclick="window.print()">🖨 Imprimer ma fiche réflexe</button>
+      </div>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn secondary" onclick="goStep(6)">← Retour</button>
+      <span></span>
+    </div>
+  </div>
+
+</main>
+
+<div class="save-status" id="saveStatus">Vos réponses sont enregistrées automatiquement sur ce poste.</div>
+<footer>TP Gestion du stress et des conflits — Seconde MRC</footer>
+
+<script>
+(function(){
+  var totalSteps = 8;
+  var storageKey = 'tp_stress_conflits_v7';
+
+  function safeGet(){
+    try{ return JSON.parse(localStorage.getItem(storageKey) || '{}'); }
+    catch(e){ return {}; }
+  }
+  function safeSet(data){
+    try{ localStorage.setItem(storageKey, JSON.stringify(data)); }
+    catch(e){ /* stockage indisponible : on continue sans bloquer */ }
+  }
+
+  var state = safeGet();
+
+  function wordCount(str){
+    if(!str) return 0;
+    var m = str.trim().match(/\S+/g);
+    return m ? m.length : 0;
+  }
+
+  // Build nav
+  var nav = document.getElementById('stepsNav');
+  var labels = ['Contexte','Quiz','Mots croisés','Recherche','Étude de cas','Simulateur DESC','DESC QCM','Ma fiche'];
+  labels.forEach(function(lab, i){
+    var b = document.createElement('button');
+    b.textContent = (i+1)+'. '+lab;
+    b.onclick = function(){ goStep(i); };
+    b.id = 'navbtn'+i;
+    nav.appendChild(b);
+  });
+
+  window.goStep = function(n){
+    document.querySelectorAll('.step').forEach(function(s){ s.classList.remove('active'); });
+    document.querySelector('.step[data-step="'+n+'"]').classList.add('active');
+    for(var i=0;i<totalSteps;i++){
+      var btn = document.getElementById('navbtn'+i);
+      if(btn) btn.classList.toggle('active', i===n);
+    }
+    window.scrollTo({top:0, behavior:'smooth'});
+  };
+
+  // Restore + bind text inputs, with live word counters
+  document.querySelectorAll('.field').forEach(function(fieldDiv){
+    var min = parseInt(fieldDiv.getAttribute('data-min') || '0', 10);
+    var input = fieldDiv.querySelector('textarea, input[type=text]');
+    var counter = fieldDiv.querySelector('.counter');
+    if(!input) return;
+    var k = input.getAttribute('data-key');
+    if(k && state[k]) input.value = state[k];
+
+    function refresh(){
+      var wc = wordCount(input.value);
+      if(counter){
+        counter.textContent = wc + ' / ' + min + ' mot' + (min>1?'s':'');
+        counter.classList.toggle('ok', wc >= min);
+      }
+      fieldDiv.classList.toggle('invalid', wc < min && input.dataset.touched === '1');
+    }
+    input.addEventListener('input', function(){
+      input.dataset.touched = '1';
+      if(k){ state[k] = input.value; safeSet(state); }
+      refresh();
+    });
+    refresh();
+  });
+
+  // Student name
+  var nameInput = document.getElementById('studentName');
+  var nameTag = document.getElementById('nameTag');
+  if(state['studentName']){
+    nameInput.value = state['studentName'];
+    nameTag.textContent = '👤 ' + state['studentName'];
+  }
+  nameInput.addEventListener('input', function(){
+    state['studentName'] = nameInput.value;
+    safeSet(state);
+    nameTag.textContent = '👤 ' + (nameInput.value || 'non renseigné');
+  });
+
+  // Quiz answers restore
+  document.querySelectorAll('.quiz-q input[type=radio]').forEach(function(r){
+    var name = r.name;
+    if(state['quiz_'+name] === r.value) r.checked = true;
+    r.addEventListener('change', function(){
+      state['quiz_'+name] = r.value;
+      safeSet(state);
+    });
+  });
+
+  window.checkQuiz = function(){
+    var qs = document.querySelectorAll('.quiz-q');
+    var score = 0;
+    qs.forEach(function(q){
+      var correct = q.getAttribute('data-correct');
+      var name = q.querySelector('input[type=radio]').name;
+      var checked = q.querySelector('input[name="'+name+'"]:checked');
+      var fb = q.querySelector('.feedback');
+      if(!checked){
+        fb.className = 'feedback ko';
+        fb.textContent = 'Merci de choisir une réponse.';
+        return;
+      }
+      if(checked.value === correct){
+        score++;
+        fb.className = 'feedback ok';
+        fb.textContent = '✓ Bonne réponse.';
+      } else {
+        fb.className = 'feedback ko';
+        fb.textContent = '✗ Ce n\'est pas la bonne réponse — revois cette notion dans ton cours.';
+      }
+    });
+    document.getElementById('quizScore').textContent = 'Score : ' + score + ' / ' + qs.length;
+  };
+
+  // ---- Mots croisés (Étape 2) ----
+  var xwWords = [
+    {num:'1', dir:'H', row:15, col:17, answer:'AVOCAT'},
+    {num:'2', dir:'H', row:17, col:16, answer:'COEUR'},
+    {num:'3', dir:'H', row:17, col:23, answer:'POIDS'},
+    {num:'4', dir:'H', row:20, col:20, answer:'INTELLECTUELS'},
+    {num:'5', dir:'H', row:23, col:17, answer:'CAFE'},
+    {num:'A', dir:'V', row:15, col:20, answer:'CHRONIQUE'},
+    {num:'B', dir:'V', row:18, col:32, answer:'DESC'},
+    {num:'C', dir:'V', row:19, col:26, answer:'MEDECIN'},
+    {num:'D', dir:'V', row:18, col:29, answer:'MAUX'},
+    {num:'E', dir:'V', row:15, col:27, answer:'RPS'},
+    {num:'F', dir:'V', row:16, col:24, answer:'CONFLIT'},
+    {num:'G', dir:'V', row:20, col:22, answer:'TMS'},
+    {num:'H', dir:'V', row:11, col:22, answer:'SPORT'}
+  ];
+
+  (function buildCrossword(){
+    var container = document.getElementById('xwGrid');
+    if(!container) return;
+
+    var minRow=99, maxRow=0, minCol=99, maxCol=0;
+    var cellMap = {}; // "r_c" -> {letter, labels:[]}
+    xwWords.forEach(function(w){
+      for(var i=0;i<w.answer.length;i++){
+        var r = w.dir==='H' ? w.row : w.row+i;
+        var c = w.dir==='H' ? w.col+i : w.col;
+        var key = r+'_'+c;
+        if(!cellMap[key]) cellMap[key] = {letter:w.answer[i], labels:[]};
+        if(i===0) cellMap[key].labels.push(w.num);
+        minRow=Math.min(minRow,r); maxRow=Math.max(maxRow,r);
+        minCol=Math.min(minCol,c); maxCol=Math.max(maxCol,c);
+      }
+    });
+
+    var nrows = maxRow-minRow+1, ncols = maxCol-minCol+1;
+    container.style.gridTemplateColumns = 'repeat('+ncols+', 34px)';
+    container.style.gridTemplateRows = 'repeat('+nrows+', 34px)';
+
+    var inputs = []; // ordered list for arrow-key navigation, with row/col
+    for(var r=minRow; r<=maxRow; r++){
+      for(var c=minCol; c<=maxCol; c++){
+        var key = r+'_'+c;
+        if(cellMap[key]){
+          var cellDiv = document.createElement('div');
+          cellDiv.className = 'xw-cell';
+          if(cellMap[key].labels.length){
+            var lab = document.createElement('div');
+            lab.className = 'xw-label';
+            lab.textContent = cellMap[key].labels.join('/');
+            cellDiv.appendChild(lab);
+          }
+          var inp = document.createElement('input');
+          inp.setAttribute('maxlength','1');
+          inp.setAttribute('autocomplete','off');
+          inp.dataset.answer = cellMap[key].letter;
+          inp.dataset.key = 'xw_'+key;
+          inp.dataset.row = r; inp.dataset.col = c;
+          if(state[inp.dataset.key]) inp.value = state[inp.dataset.key];
+          inp.addEventListener('input', function(e){
+            var el = e.target;
+            el.value = el.value.toUpperCase().replace(/[^A-Z]/g,'');
+            el.classList.remove('xw-ok','xw-ko');
+            state[el.dataset.key] = el.value;
+            safeSet(state);
+            if(el.value){
+              var idx = inputs.indexOf(el);
+              if(idx>-1 && idx<inputs.length-1) inputs[idx+1].focus();
+            }
+          });
+          cellDiv.appendChild(inp);
+          container.appendChild(cellDiv);
+          inputs.push(inp);
+        } else {
+          var empty = document.createElement('div');
+          empty.className = 'xw-empty';
+          container.appendChild(empty);
+        }
+      }
+    }
+
+  })();
+
+  window.checkCrossword = function(){
+    var total=0, correct=0;
+    document.querySelectorAll('#xwGrid input').forEach(function(inp){
+      total++;
+      inp.classList.remove('xw-ok','xw-ko');
+      if(!inp.value) return;
+      if(inp.value === inp.dataset.answer){
+        correct++;
+        inp.classList.add('xw-ok');
+      } else {
+        inp.classList.add('xw-ko');
+      }
+    });
+    document.getElementById('xwScore').textContent = 'Score : ' + correct + ' / ' + total;
+  };
+
+  // Radio rows (karim_type, lea_type, nadia_type) restore + save
+  document.querySelectorAll('.radio-row input[type=radio]').forEach(function(r){
+    var name = r.name;
+    if(state['radio_'+name] === r.value) r.checked = true;
+    r.addEventListener('change', function(){
+      state['radio_'+name] = r.value;
+      safeSet(state);
+    });
+  });
+
+  // Checklists (interlocuteurs, desc_check) restore + save
+  document.querySelectorAll('.checklist').forEach(function(grp){
+    var groupName = grp.getAttribute('data-group');
+    var saved = state['chk_'+groupName] || [];
+    grp.querySelectorAll('input[type=checkbox]').forEach(function(cb){
+      if(saved.indexOf(cb.value) !== -1) cb.checked = true;
+      cb.addEventListener('change', function(){
+        var vals = [];
+        grp.querySelectorAll('input[type=checkbox]:checked').forEach(function(c){ vals.push(c.value); });
+        state['chk_'+groupName] = vals;
+        safeSet(state);
+      });
+    });
+  });
+
+  // DESC QCM selects: restore + save
+  document.querySelectorAll('select.desc-select').forEach(function(sel){
+    var k = sel.getAttribute('data-key');
+    if(k && state[k]) sel.value = state[k];
+    sel.addEventListener('change', function(){
+      sel.classList.remove('invalid');
+      if(k){ state[k] = sel.value; safeSet(state); }
+    });
+  });
+
+  window.checkDescQcm = function(){
+    var selects = document.querySelectorAll('select.desc-select');
+    var score = 0;
+    selects.forEach(function(sel){
+      var fb = sel.parentElement.querySelector('.qcm-fb');
+      if(!sel.value){
+        fb.className = 'qcm-fb ko';
+        fb.textContent = 'Choisis une réponse.';
+        return;
+      }
+      if(sel.value === sel.getAttribute('data-correct')){
+        score++;
+        fb.className = 'qcm-fb ok';
+        fb.textContent = '✓ C\'est la meilleure formulation.';
+      } else {
+        fb.className = 'qcm-fb ko';
+        fb.textContent = '✗ Ce n\'est pas la meilleure option — relis les 4 propositions.';
+      }
+    });
+    document.getElementById('qcmScore').textContent = 'Score : ' + score + ' / ' + selects.length;
+  };
+
+  // Validation before moving to next step
+  window.tryNext = function(fromStep, toStep){
+    var stepEl = document.querySelector('.step[data-step="'+fromStep+'"]');
+    var ok = true;
+    var firstInvalid = null;
+
+    // Check text/textarea fields with data-min
+    stepEl.querySelectorAll('.field').forEach(function(fieldDiv){
+      var min = parseInt(fieldDiv.getAttribute('data-min') || '0', 10);
+      var input = fieldDiv.querySelector('textarea, input[type=text]');
+      if(!input) return;
+      var wc = wordCount(input.value);
+      if(wc < min){
+        ok = false;
+        input.dataset.touched = '1';
+        fieldDiv.classList.add('invalid');
+        if(!firstInvalid) firstInvalid = fieldDiv;
+      }
+    });
+
+    // Check radio-rows are answered
+    var radioGroups = {};
+    stepEl.querySelectorAll('.radio-row input[type=radio]').forEach(function(r){
+      radioGroups[r.name] = radioGroups[r.name] || false;
+      if(r.checked) radioGroups[r.name] = true;
+    });
+    Object.keys(radioGroups).forEach(function(name){
+      if(!radioGroups[name]){
+        ok = false;
+        var row = stepEl.querySelector('.radio-row input[name="'+name+'"]').closest('.radio-row');
+        row.style.outline = '2px solid var(--bad)';
+        row.style.borderRadius = '8px';
+        if(!firstInvalid) firstInvalid = row;
+      }
+    });
+
+    // Check checklists have at least one checked
+    stepEl.querySelectorAll('.checklist').forEach(function(grp){
+      var anyChecked = grp.querySelectorAll('input[type=checkbox]:checked').length > 0;
+      if(!anyChecked){
+        ok = false;
+        grp.style.outline = '2px solid var(--bad)';
+        grp.style.borderRadius = '8px';
+        if(!firstInvalid) firstInvalid = grp;
+      } else {
+        grp.style.outline = 'none';
+      }
+    });
+
+    // Check DESC QCM selects are all answered (not necessarily correct)
+    stepEl.querySelectorAll('select.desc-select').forEach(function(sel){
+      if(!sel.value){
+        ok = false;
+        sel.classList.add('invalid');
+        if(!firstInvalid) firstInvalid = sel;
+      }
+    });
+
+    // Check crossword cells are all filled
+    stepEl.querySelectorAll('#xwGrid input').forEach(function(inp){
+      if(!inp.value){
+        ok = false;
+        inp.classList.add('xw-ko');
+        if(!firstInvalid) firstInvalid = inp;
+      }
+    });
+
+    var msg = document.getElementById('msg'+fromStep);
+    if(ok){
+      if(msg) msg.style.display = 'none';
+      goStep(toStep);
+    } else {
+      if(msg) msg.style.display = 'block';
+      if(firstInvalid) firstInvalid.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+  };
+
+  goStep(0);
+})();
+</script>
+
+</body>
+</html>
