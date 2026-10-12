@@ -1,0 +1,521 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Révision Communication professionnelle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* Layout : une colonne, un module affiché à la fois (onglets), barre de progression collante, courriel final seul exporté en PDF */
+:root{
+  --bg:#EEF2F7; --panel:#FFFFFF; --ink:#14263D; --muted:#56667D; --line:#CFD8E4;
+  --accent:#1B5FC1; --accent-ink:#FFFFFF; --soft:#E4EEFB;
+  --ok:#17653A; --okbg:#E3F4EA; --ko:#A33A12; --kobg:#FCEBE2; --note:#FFF6D6; --noteink:#5C4A05;
+  --f-display:'Barlow Condensed','Arial Narrow',sans-serif; --f-body:'Source Sans 3',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1826; --panel:#17233A; --ink:#E7EDF6; --muted:#9FB0C7; --line:#2C3C58;
+  --accent:#6AA3FF; --accent-ink:#0B1626; --soft:#1D2D4A;
+  --ok:#7FD9A1; --okbg:#143324; --ko:#FFA27A; --kobg:#3A2217; --note:#3A3315; --noteink:#F0DE9A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1826; --panel:#17233A; --ink:#E7EDF6; --muted:#9FB0C7; --line:#2C3C58;
+  --accent:#6AA3FF; --accent-ink:#0B1626; --soft:#1D2D4A;
+  --ok:#7FD9A1; --okbg:#143324; --ko:#FFA27A; --kobg:#3A2217; --note:#3A3315; --noteink:#F0DE9A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;margin:0;padding-inline:16px}
+.wrap{max-width:820px;margin-inline:auto;padding-block:20px 60px;display:flex;flex-direction:column;gap:16px}
+.wrap>*{min-width:0}
+h1,h2,h3,h4{font-family:var(--f-display);margin:0;line-height:1.1;text-wrap:balance}
+.eyebrow{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:600;font-size:15px}
+h1{font-size:clamp(34px,7vw,52px);font-weight:700;text-transform:uppercase}
+.sub{color:var(--muted);margin:6px 0 0}
+.stat{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--ink);color:var(--bg);border-radius:6px;padding:8px 14px;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;font-weight:600;align-items:center;justify-content:space-between}
+.stat .pb{flex:1 1 140px;height:8px;border-radius:99px;background:rgba(127,127,127,.4);overflow:hidden}
+.stat .pb i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.tabs button{flex:none;background:var(--panel);color:var(--ink);border:1.5px solid var(--line);font-weight:700;padding:8px 12px;border-radius:4px;font-size:14px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tabs button.done::after{content:" ✓"}
+.mhead{background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:14px 16px}
+.mhead h2{font-size:clamp(24px,5vw,32px);text-transform:uppercase}
+.mhead p{margin:4px 0 0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.id-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+label.f{display:flex;flex-direction:column;gap:3px;font-weight:600;font-size:14px}
+input[type=text],textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:4px;padding:8px 10px;width:100%}
+textarea{resize:vertical;min-height:70px}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.ex{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.ex>*{min-width:0}
+.ex h4{font-size:19px;font-weight:600;display:flex;gap:10px;align-items:flex-start;font-family:var(--f-body);line-height:1.3}
+.ex h4 .n{flex:none;background:var(--ink);color:var(--bg);border-radius:4px;min-width:34px;height:26px;display:grid;place-items:center;font-family:var(--f-display);font-size:16px;padding-inline:6px;font-variant-numeric:tabular-nums}
+.ex.okx h4 .n{background:var(--ok);color:#fff}
+.hint{margin:0;color:var(--muted);font-size:14px}
+button{font:inherit;font-weight:700;border:0;border-radius:4px;padding:9px 16px;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+button.alt{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fb{font-weight:600;font-size:15px}.fb.ok{color:var(--ok)}.fb.ko{color:var(--ko)}
+.expl{background:var(--note);color:var(--noteink);border-radius:4px;padding:8px 12px;font-size:15px}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1.5px solid var(--line);border-radius:4px;cursor:pointer}
+.opt input{margin-top:4px;flex:none;accent-color:var(--accent);width:18px;height:18px}
+.opt.ok,.card.ok,.tk.ok{background:var(--okbg);border-color:var(--ok)}
+.opt.ko,.card.ko,.tk.ko{background:var(--kobg);border-color:var(--ko)}
+.opt.miss,.tk.miss{border-style:dashed;border-color:var(--ok)}
+.card{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 10px;border:1.5px solid var(--line);border-radius:4px}
+.card .t{flex:1 1 240px;min-width:0}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{background:transparent;color:var(--ink);border:1.5px solid var(--line);padding:5px 10px;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.row.mt select{flex:0 1 230px}
+.mrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0}
+.mrow .t{flex:1 1 260px;min-width:0}
+.mrow select{flex:0 1 230px}
+.mrow.ok select{border-color:var(--ok);background:var(--okbg)}.mrow.ko select{border-color:var(--ko);background:var(--kobg)}
+.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ord li{display:flex;gap:8px;align-items:center;padding:6px 8px;border:1.5px solid var(--line);border-radius:4px}
+.ord li .t{flex:1;min-width:0}
+.ord li.ok{background:var(--okbg);border-color:var(--ok)}.ord li.ko{background:var(--kobg);border-color:var(--ko)}
+.ord li .p{flex:none;font-family:var(--f-display);font-size:17px;color:var(--muted);min-width:20px;text-align:center}
+.ord button{padding:4px 10px;background:transparent;color:var(--accent);border:1.5px solid var(--line)}
+.tkbox{border:1.5px solid var(--line);border-radius:4px;padding:10px;line-height:2.1;background:var(--bg)}
+.tk{font:inherit;font-weight:400;color:var(--ink);background:transparent;border:1.5px solid transparent;border-radius:4px;padding:2px 5px;margin:0 1px;cursor:pointer}
+.tk:hover{border-color:var(--line)}
+.tk[aria-pressed="true"]{background:var(--soft);border-color:var(--accent);font-weight:600}
+.tk.ok[aria-pressed="true"]{background:var(--okbg);border-color:var(--ok)}
+.tk.ko[aria-pressed="true"]{background:var(--kobg);border-color:var(--ko)}
+.chat{display:flex;flex-direction:column;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px}
+.bub{max-width:88%;padding:8px 12px;border-radius:14px;font-size:15px;overflow-wrap:anywhere}
+.bub.c{align-self:flex-start;background:var(--panel);border:1px solid var(--line)}
+.bub.v{align-self:flex-end;background:var(--accent);color:var(--accent-ink)}
+.bub small{display:block;opacity:.7;font-size:12px}
+.pick{display:flex;flex-direction:column;gap:6px}
+.pick button{text-align:left;background:var(--panel);color:var(--ink);border:1.5px solid var(--accent);font-weight:400;padding:8px 12px}
+.pick button.bad{border-color:var(--ko);background:var(--kobg);opacity:.75}
+.cz{line-height:2.3}
+.cz select{display:inline-block;width:auto;max-width:100%;padding:4px 8px;margin:0 3px}
+.cz select.ok{border-color:var(--ok);background:var(--okbg)}.cz select.ko{border-color:var(--ko);background:var(--kobg)}
+.ctx{background:var(--soft);border-radius:6px;padding:14px 16px}
+.mail{border:1px solid var(--line);border-radius:6px;background:var(--panel);overflow:hidden}
+.mail .hd{background:var(--soft);padding:8px 14px;font-weight:700}
+.mail dl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:0;padding:10px 14px;border-bottom:1px solid var(--line);font-size:15px}
+.mail dt{color:var(--muted)}.mail dd{margin:0;overflow-wrap:anywhere}
+.mail .bd{padding:12px 14px}.mail .bd p{margin:0 0 8px}
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+.tbl th{background:var(--soft)}
+.scroll{overflow-x:auto}
+.chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.chips li{font-size:13px;font-weight:600;border:1.5px solid var(--line);color:var(--muted);border-radius:99px;padding:2px 10px}
+.chips li.on{background:var(--okbg);border-color:var(--ok);color:var(--ok)}
+.chips li.on::before{content:"✓ "}.chips li.off::before{content:"○ "}
+.warn{color:var(--ko);font-weight:600;font-size:14px}.warn:empty{display:none}
+.fiche{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.fiche .fr{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr);gap:8px;align-items:start}
+.fiche .fr>span{font-weight:700;font-size:14px;padding-top:9px}
+@media (max-width:560px){.fiche .fr{grid-template-columns:minmax(0,1fr)}.fiche .fr>span{padding-top:0}}
+.model{background:var(--note);color:var(--noteink);border-radius:4px;padding:10px 14px;font-size:15px}
+.model strong{display:block;font-family:var(--f-display);text-transform:uppercase;letter-spacing:.06em}
+.model p{margin:4px 0 0;white-space:pre-line}
+.ck{display:flex;flex-direction:column;gap:6px}
+.ck label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.ck input{margin-top:4px;width:18px;height:18px;accent-color:var(--accent)}
+.send{border:2px solid var(--accent);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--panel)}
+.send h3{font-size:26px;text-transform:uppercase}
+.msg{font-weight:600}.msg.ok{color:var(--ok)}.msg.ko{color:var(--ko)}
+.nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+@media (prefers-reduced-motion:no-preference){button{transition:filter .15s}button:hover:not(:disabled){filter:brightness(1.08)}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">2de Bac Pro MRC · Révision du chapitre</span>
+    <h1>La communication professionnelle</h1>
+    <p class="sub">Six modules pour réviser tout le cours : situation de communication, vocabulaire, téléphone et chat, réseaux sociaux, avis et CRM. Les exercices se corrigent tout seuls. À la fin, tu rédiges un courriel et tu l'enregistres en PDF.</p>
+  </header>
+
+  <div class="stat" aria-live="polite"><span>Exercices réussis : <b id="st_n">0/0</b></span><span class="pb" aria-hidden="true"><i id="st_bar"></i></span></div>
+  <nav class="tabs" id="tabs" aria-label="Modules"></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+(function(){
+"use strict";
+var KEY="rev-com-pro-2de-v1",S={};
+try{var raw=localStorage.getItem(KEY);if(raw)S=JSON.parse(raw)||{};}catch(e){S={};}
+var tmr=null;function save(){clearTimeout(tmr);tmr=setTimeout(function(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}},250);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function norm(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[’‘]/g,"'");}
+var TU=/\b(tu|toi|ton|ta|tes|t'as|te)\b/;
+
+/* ================= CONTENU ================= */
+var M=[];
+function mod(title,intro,items){M.push({title:title,intro:intro,items:items});}
+var VN=["Verbal (les mots)","Non verbal (ce qui se voit, se ressent)"];
+
+mod("1 · La situation de communication","Qui parle à qui, comment, et pourquoi ? Les bases de la séance 1.",[
+ {k:"sort",id:"s_ind",q:"Communication individuelle ou communication de masse ? Classe chaque message.",cats:["Individuelle","De masse"],
+  items:[{l:"SMS d'une conseillère à Mme Dupuis : « Votre commande est arrivée. Elle vous attend à l'accueil. »",a:0},
+         {l:"Publication Instagram de l'enseigne : « -40 % sur les croquettes chiens et chats ! #promo »",a:1},
+         {l:"Affiche « Les promos du moment » à l'entrée du magasin",a:1},
+         {l:"Courriel du service client à un client : « Je vous confirme la disponibilité de l'article de votre panier. »",a:0},
+         {l:"Appel d'un conseiller à un client pour confirmer un retrait en magasin",a:0},
+         {l:"Newsletter envoyée à tous les clients inscrits",a:1}],
+  expl:"Individuelle : le message vise un client précis et identifié. De masse : il vise un public large et anonyme (abonnés, passants, liste de diffusion)."},
+ {k:"match",id:"s_elem",q:"Les 4 éléments d'une situation de communication : associe chaque définition à son terme.",opts:["Émetteur","Récepteur","Contexte","Intention"],
+  rows:[{l:"Les circonstances : où, quand, par quel moyen le message est échangé.",a:"Contexte"},
+        {l:"Celui qui reçoit le message.",a:"Récepteur"},
+        {l:"Le but poursuivi : pourquoi on communique.",a:"Intention"},
+        {l:"Celui qui envoie le message.",a:"Émetteur"}]},
+ {k:"sort",id:"s_vnv",q:"Communication verbale ou non verbale ? Range chaque élément.",cats:VN,
+  items:[{l:"Le choix des mots",a:0},{l:"Le sourire",a:1},{l:"Le débit de la voix",a:0},{l:"La posture",a:1},
+         {l:"La formule « Cordialement »",a:0},{l:"Le regard",a:1},{l:"L'apparence (la tenue)",a:1},{l:"L'empathie exprimée par les mots",a:0}],
+  expl:"Verbal : choix des mots, registre, tonalité, débit, politesse, empathie, courtoisie. Non verbal : proximité, apparence, posture, gestuelle, toucher, expression du visage."},
+ {k:"match",id:"s_meh",q:"Règle de Mehrabian : quelle part dans la perception d'un message commercial ?",opts:["7 %","38 %","55 %"],
+  rows:[{l:"Les mots (le contenu du message)",a:"7 %"},{l:"Le langage du corps (gestes, regard, posture)",a:"55 %"},{l:"La voix (ton, débit)",a:"38 %"}],
+  expl:"55 % pour le non verbal, 38 % pour la voix, 7 % pour les mots : la façon de dire compte autant que ce qu'on dit."},
+ {k:"match",id:"s_sbam",q:"S.B.A.M. : retrouve la signification de chaque lettre.",opts:["Sourire","Bonjour","Au revoir","Merci"],
+  rows:[{l:"S",a:"Sourire"},{l:"B",a:"Bonjour"},{l:"A",a:"Au revoir"},{l:"M",a:"Merci"}]}
+]);
+
+mod("2 · Les mots du professionnel","Registres de langue, vocabulaire à privilégier, repérage des maladresses.",[
+ {k:"sort",id:"v_reg",q:"Quel est le registre de langage de chaque phrase ?",cats:["Familier","Courant","Soutenu"],
+  items:[{l:"« Salut, tu veux quoi ? »",a:0},{l:"« Bonjour, que puis-je faire pour vous ? »",a:1},
+         {l:"« Je vous prie de bien vouloir patienter, je m'enquiers de votre dossier sans délai. »",a:2},
+         {l:"« J'sais pas, faut voir. »",a:0},{l:"« Je vais vérifier cette information. »",a:1},{l:"« Pas de souci, c'est bon. »",a:0}],
+  expl:"Le registre attendu avec un client est le registre courant : mots simples et clairs, syntaxe correcte. Le familier est à éviter, le soutenu est parfois trop distant."},
+ {k:"sort",id:"v_evit",q:"À éviter ou à privilégier avec un client ?",cats:["À éviter","À privilégier"],
+  items:[{l:"« Salut »",a:0},{l:"« Bonjour »",a:1},{l:"« J'sais pas »",a:0},{l:"« Je vais vérifier cette information. »",a:1},
+         {l:"« Vous voulez quoi ? »",a:0},{l:"« Que puis-je faire pour vous ? »",a:1},{l:"« Attendez »",a:0},{l:"« Je vous invite à patienter quelques instants. »",a:1}]},
+ {k:"tokens",id:"v_err",q:"Chasse aux erreurs : un conseiller répond à un client sur un chat. Clique sur toutes les parties qui ne sont pas professionnelles.",
+  segs:[{t:"bjr,",e:1},{t:"oui on en a.",e:1},{t:"c 9,90 le sac.",e:1},{t:"vous pouvez passer samedi.",e:0},{t:"dites moi votre nom",e:1},{t:"svp",e:1},{t:"merci",e:0}],
+  expl:"Erreurs : abréviations (bjr, c, svp), langage familier (« oui on en a »), formulation d'ordre sans politesse (« dites moi votre nom »). Le vouvoiement et le remerciement sont corrects."},
+ {k:"mcq",id:"v_rewr",q:"Quelle réécriture est la meilleure pour le message de l'exercice précédent ?",
+  opts:["« Bonjour, nous avons ce produit en stock au prix de 9,90 € le sac. Vous pouvez passer samedi : puis-je avoir votre nom pour réserver ? Merci. »",
+        "« Bonjour, ouais on en a. C'est 9,90 € le sac. Passez samedi. »",
+        "« Bonsoir à vous cher client, nous disposons dudit article, veuillez agréer mes salutations distinguées. »"],ans:[0],
+  expl:"La première réponse est complète (disponibilité, prix, retrait, demande du nom), polie, au vouvoiement et en registre courant."},
+ {k:"cloze",id:"v_ret",q:"Je retiens : complète les phrases.",
+  parts:["Avec un client, j'utilise un langage ",{o:["familier","courant","vulgaire"],a:"courant"}," et je ",{o:["tutoie","vouvoie"],a:"vouvoie"},". Je ne dis pas « Salut » mais « ",{o:["Bonjour","Coucou","Yo"],a:"Bonjour"}," ». Le langage ",{o:["familier","soutenu"],a:"familier"}," est à éviter avec un client."]}
+]);
+
+mod("3 · Téléphone et chat","Réussir un appel, répondre sur un chat, comparer les canaux.",[
+ {k:"order",id:"t_ord",q:"Remets dans l'ordre les 7 étapes d'un appel professionnel (utilise les flèches).",
+  items:["Accueillir : je salue le client","Identifier : je demande le nom si nécessaire","Écouter : je laisse le client expliquer sa demande","Questionner : je précise le besoin","Reformuler : je vérifie que j'ai compris","Répondre : je donne une information précise ou une solution","Conclure : je remercie et je salue"],init:[4,0,6,2,5,1,3]},
+ {k:"match",id:"t_ph",q:"À quelle étape de l'appel correspond chaque phrase ?",
+  opts:["Accueillir","Identifier","Écouter","Questionner","Reformuler","Répondre","Conclure"],
+  rows:[{l:"« Si je comprends bien, vous recherchez un sécateur pour vos rosiers ? »",a:"Reformuler"},
+        {l:"« Bonjour, Jardiland Alençon, Emma à votre écoute. »",a:"Accueillir"},
+        {l:"« Nous avons ce modèle en stock à 29,90 €. »",a:"Répondre"},
+        {l:"« Quel budget avez-vous prévu ? »",a:"Questionner"},
+        {l:"« Merci pour votre appel. Bonne journée. »",a:"Conclure"},
+        {l:"« Puis-je connaître votre nom ? »",a:"Identifier"},
+        {l:"Le conseiller laisse le client parler sans l'interrompre.",a:"Écouter"}]},
+ {k:"branch",id:"t_chat",q:"Conversation par chat : tu es conseiller·ère chez Jardiland Alençon. Bulbes de tulipes en mélange, sachet de 50 bulbes à 9,90 €, 24 sachets en stock, retrait samedi de 9 h à 19 h, réservation possible. Choisis la meilleure réponse à chaque message.",
+  rounds:[
+   {c:"Bjr, vous avez des bulbes de tulipes ?",o:[
+     {t:"Oui on en a plein, venez voir !",f:"Trop familier et imprécis : pas de salutation, pas d'information sur le produit."},
+     {t:"Bonjour, oui, nous avons des bulbes de tulipes en mélange de couleurs : un sachet de 50 bulbes, disponible au rayon plantes à bulbes.",ok:1},
+     {t:"Bonjour. Oui.",f:"Trop sec : le client n'a aucune information utile."}]},
+   {c:"Cb ça coûte ?",o:[
+     {t:"Je crois que c'est autour de 10 €, mais je ne sais pas trop.",f:"On ne donne pas une information approximative : on vérifie et on donne le prix exact."},
+     {t:"Le sachet de 50 bulbes est à 9,90 €. Souhaitez-vous que je vous en réserve un ?",ok:1},
+     {t:"9,90 € 😉",f:"Pas d'émoji sur un chat professionnel, et la réponse est trop brève."}]},
+   {c:"Ok je veux bien pour samedi",o:[
+     {t:"Parfait, c'est noté !",f:"Il manque le nom du client et l'information sur l'horaire de retrait."},
+     {t:"Très bien, je réserve un sachet à votre nom. Pouvez-vous me donner votre nom, s'il vous plaît ? Le magasin est ouvert samedi de 9 h à 19 h.",ok:1},
+     {t:"OK, dites-moi votre nom svp.",f:"« OK » et « svp » sont des abréviations familières, et la formulation est trop sèche."}]}]},
+ {k:"sort",id:"t_tf",q:"Vrai ou faux ? Compare les canaux.",cats:["Vrai","Faux"],
+  items:[{l:"Le chat est généralement plus court et plus rapide qu'un courriel.",a:0},
+         {l:"Sur un chat professionnel, on peut utiliser des abréviations comme « svp » ou « bjr ».",a:1},
+         {l:"Au téléphone, la voix et le ton comptent beaucoup.",a:0},
+         {l:"Un courriel professionnel doit toujours avoir un objet.",a:0},
+         {l:"Au téléphone, on coupe la parole au client pour aller plus vite.",a:1},
+         {l:"Un courriel se termine par une formule de politesse et une signature.",a:0}]}
+]);
+
+mod("4 · Réseaux sociaux et avis négatifs","Séance 2 : choisir un réseau, publier, réagir à un avis négatif sans créer de bad buzz.",[
+ {k:"match",id:"r_net",q:"Associe chaque description à son réseau social.",opts:["Facebook","Instagram","TikTok","YouTube"],
+  rows:[{l:"Photos, courtes vidéos et stories pour un public sensible à l'image",a:"Instagram"},
+        {l:"Public large, souvent plus âgé : publications variées, événements, avis clients",a:"Facebook"},
+        {l:"Tutoriels et démonstrations en vidéos longues",a:"YouTube"},
+        {l:"Vidéos courtes et dynamiques pour un public très jeune",a:"TikTok"}]},
+ {k:"mcq",id:"r_codes",q:"Quels sont les codes d'une publication professionnelle réussie ? (coche les 4 bonnes réponses)",multi:true,
+  opts:["Un ton adapté au réseau et au public","Un visuel soigné, en accord avec l'image de l'enseigne","Une fréquence de publication régulière","Des hashtags pertinents","Une photo floue publiée vite, sans texte","30 hashtags sans rapport avec le produit"],ans:[0,1,2,3]},
+ {k:"sort",id:"r_bp",q:"Un client laisse un commentaire très négatif. Bonne ou mauvaise pratique ?",cats:["Bonne pratique","Mauvaise pratique"],
+  items:[{l:"Supprimer le commentaire",a:1},{l:"Répondre rapidement et poliment",a:0},{l:"Proposer de continuer en message privé",a:0},
+         {l:"Minimiser les faits : « ce n'est pas grave »",a:1},{l:"S'excuser sincèrement pour la gêne occasionnée",a:0},{l:"Nier les faits sans vérifier",a:1}],
+  expl:"Face à un avis négatif : reconnaître les faits, s'excuser sincèrement, proposer une solution concrète, rester courtois et réactif. On ne supprime jamais ni n'ignore un commentaire."},
+ {k:"sort",id:"r_4et",q:"Retrouve les 4 étapes de la réponse : à quelle étape correspond chaque phrase ?",cats:["Reconnaître les faits","S'excuser","Proposer une solution","Rester courtois"],
+  items:[{l:"« Nous avons bien noté que votre commande n'est pas arrivée à la date prévue. »",a:0},
+         {l:"« Nous sommes sincèrement désolés pour cette attente. »",a:1},
+         {l:"« Nous relançons le transporteur aujourd'hui et nous vous offrons les frais de livraison. »",a:2},
+         {l:"« Merci de votre patience, nous restons à votre écoute en message privé. »",a:3}]},
+ {k:"mcq",id:"r_rep",q:"Commentaire public : « Commande jamais reçue, personne ne répond, honteux ! » Quelle réponse choisir ?",
+  opts:["« Ce n'est pas notre faute, c'est le transporteur. »","Supprimer le commentaire pour éviter le bad buzz.",
+        "« Bonjour Madame, nous comprenons votre agacement et nous vous présentons nos excuses. Nous vérifions votre commande dès aujourd'hui : pouvez-vous nous écrire en message privé avec votre numéro de commande ? »"],ans:[2],
+  expl:"La bonne réponse reconnaît le problème, s'excuse, propose une suite concrète et déplace le détail en message privé."}
+]);
+
+mod("5 · Avis, CRM et trace écrite","Répondre à un avis en ligne et garder une trace utile pour l'équipe.",[
+ {k:"order",id:"c_ord",q:"Remets dans l'ordre la méthode pour répondre à un avis en ligne.",
+  items:["Je repère le problème.","Je remercie ou je reconnais le retour.","Je m'excuse si nécessaire et je propose une suite réaliste.","Je reste courtois et j'invite au contact privé si le dossier doit être vérifié."],init:[2,0,3,1]},
+ {k:"sort",id:"c_fe",q:"Une bonne note CRM : à faire ou à éviter ?",cats:["À faire","À éviter"],
+  items:[{l:"Écrire des faits vérifiés",a:0},{l:"Écrire un jugement : « client pénible »",a:1},{l:"Raconter toute la conversation mot à mot",a:1},
+         {l:"Noter la solution et la prochaine action",a:0},{l:"Indiquer le canal, la date et le produit",a:0},{l:"Ajouter des informations personnelles inutiles",a:1}]},
+ {k:"tokens",id:"c_tok",q:"Voici une note CRM. Clique sur les phrases qui n'ont rien à faire dans un CRM.",
+  segs:[{t:"Le 12/10 à 15 h 10, Mme Martin appelle le magasin.",e:0},{t:"VTT livré avec le cadre rayé et le frein arrière défaillant.",e:0},
+        {t:"Cliente pénible et très énervée.",e:1},{t:"Rendez-vous gratuit à l'atelier le 14/10 à 10 h 30.",e:0},
+        {t:"Elle m'a raconté sa journée de travail en détail.",e:1},{t:"À suivre : signaler le problème au transporteur et confirmer le rendez-vous par écrit.",e:0}],
+  expl:"Un jugement (« pénible ») et des détails sans lien avec le dossier n'ont pas leur place dans un CRM. On garde les faits, la solution et la suite à donner."},
+ {k:"mcq",id:"c_info",q:"Réservation de chaussures : quelles informations sont indispensables dans la note CRM ? (coche toutes les bonnes réponses)",multi:true,
+  opts:["Date et heure de l'appel","Nom de la cliente","Produit et pointure","Réservation jusqu'à 18 h le jour même","Statut : vente non finalisée, à récupérer","Son numéro de carte bancaire","Son avis personnel sur le magasin"],ans:[0,1,2,3,4]}
+]);
+
+/* Module 6 : courriel */
+var MAILFIELDS=[{id:"obj",label:"Objet",type:"input"},{id:"appel",label:"Formule d'appel",type:"input"},{id:"corps",label:"Corps du message",type:"area",rows:8},{id:"polit",label:"Formule de politesse",type:"input"},{id:"sign",label:"Signature",type:"area",rows:2}];
+var MAILCHECKS=[
+ {l:"Objet renseigné",f:"obj",re:/\S{5,}/},
+ {l:"Formule d'appel avec Madame Garnier",f:"appel",re:/(bonjour|madame)/},
+ {l:"Excuses ou empathie",f:"corps",re:/(desol|excuse|navre|regrett|comprenons|comprends)/},
+ {l:"Solution : échange d'un sac neuf",f:"corps",re:/(echang|remplac|sac neuf|nouveau sac)/},
+ {l:"Lieu : l'accueil du magasin",f:"corps",re:/accueil/},
+ {l:"Date limite : samedi",f:"corps",re:/samedi/},
+ {l:"Horaires : 9 h à 19 h",f:"corps",re:/9 ?h.*19 ?h|19 ?h.*9 ?h/s},
+ {l:"Numéro de commande 7316",f:"corps",re:/7316/},
+ {l:"Vouvoiement",f:"corps",re:/\b(vous|votre|vos)\b/},
+ {l:"Formule de politesse",f:"polit",re:/(cordialement|salutations|bien a vous)/},
+ {l:"Signature : prénom + Jardiland Alençon",f:"sign",re:/jardiland/}];
+var MAILWARN=[{f:"corps",re:TU,msg:"Attention : on vouvoie la cliente."},{f:"corps",re:/\b(bjr|svp|stp|slt|cdlt|pb|qq)\b/,msg:"Pas d'abréviation dans un courriel professionnel."}];
+var MAILMODEL="Objet : Votre commande n°7316 – échange de votre sac de terreau\nBonjour Madame Garnier,\nNous sommes sincèrement désolés que l'un de vos sacs de terreau soit arrivé déchiré. Nous comprenons le désagrément que cela a causé.\nNous pouvons vous échanger gratuitement ce sac contre un sac neuf. Il vous suffit de vous présenter à l'accueil du magasin, jusqu'à samedi, avec le sac abîmé (ou une photo) et votre numéro de commande 7316. Le magasin est ouvert de 9 h à 19 h.\nNous restons à votre disposition pour toute question.\nBien cordialement,\nLéa, conseillère de vente – Jardiland Alençon";
+var MAILHTML='<div class="mail"><div class="hd">Courriel reçu</div><dl><dt>De :</dt><dd>Léa Garnier</dd><dt>À :</dt><dd>Service client – Jardiland Alençon</dd><dt>Objet :</dt><dd><b>Sac de terreau déchiré – commande n°7316</b></dd></dl><div class="bd"><p>Bonjour,</p><p>J\'ai retiré hier ma commande n°7316 au drive. En rentrant, j\'ai vu qu\'un des deux sacs de terreau était déchiré et à moitié vide. J\'ai dû tout ramasser dans mon coffre, c\'est vraiment désagréable. Comment puis-je obtenir un sac neuf ?</p><p>Cordialement,<br>Léa Garnier</p></div></div>'+
+ '<div class="scroll"><table class="tbl"><thead><tr><th colspan="2">Informations vérifiées par le magasin</th></tr></thead><tbody><tr><td><b>Commande</b></td><td>n°7316 : 2 sacs de terreau universel 40 L, retirés au drive</td></tr><tr><td><b>Solution</b></td><td>Échange gratuit d\'un sac neuf</td></tr><tr><td><b>Où ?</b></td><td>À l\'accueil du magasin</td></tr><tr><td><b>Jusqu\'à quand ?</b></td><td>Jusqu\'à samedi ; magasin ouvert de 9 h à 19 h</td></tr><tr><td><b>À apporter</b></td><td>Le sac abîmé (ou une photo) et le numéro de commande</td></tr></tbody></table></div>';
+mod("6 · Mon courriel (à rendre en PDF)","Mets en pratique tout le chapitre : réponds à la cliente, puis enregistre ton courriel en PDF et envoie-le à ton professeur.",[
+ {k:"html",h:MAILHTML},
+ {k:"mail",id:"mail",q:"Rédige la réponse complète à Mme Garnier : objet, formule d'appel, corps du message, formule de politesse, signature. Réponds à sa question, montre de l'empathie et donne toutes les informations utiles."}
+]);
+
+/* ================= MOTEUR ================= */
+var EX=[],BY={};
+M.forEach(function(m,mi){var n=0;m.items.forEach(function(it){if(it.k==="html")return;n++;it.n=(mi+1)+"."+n;it.mi=mi;EX.push(it);BY[it.id]=it;});});
+function st(id){return S[id]||(S[id]={});}
+function isOk(e){
+  var s=S[e.id]||{};
+  if(e.k==="branch")return s.r>=e.rounds.length;
+  if(!s.ck||s.shown)return false;
+  if(e.k==="sort"){var v=s.v||{};return e.items.every(function(it,i){return v[i]===it.a;});}
+  if(e.k==="match"){var v2=s.v||{};return e.rows.every(function(r,i){return v2[i]===r.a;});}
+  if(e.k==="mcq"){return (s.sel||[]).slice().sort().join()===e.ans.slice().sort().join();}
+  if(e.k==="order"){var o=s.o||e.init;return o.every(function(x,p){return x===p;});}
+  if(e.k==="cloze"){var v3=s.v||{},ok=true,bi=0;e.parts.forEach(function(p){if(typeof p!=="string"){if(v3[bi]!==p.a)ok=false;bi++;}});return ok;}
+  if(e.k==="tokens"){var sel=s.sel||[];return e.segs.every(function(g,i){return !!g.e===(sel.indexOf(i)>=0);});}
+  return false;
+}
+function body(e){
+  var s=st(e.id),ck=!!s.ck,h="";
+  if(e.k==="sort"){var v=s.v||{};
+    e.items.forEach(function(it,i){var cls="card";if(ck)cls+=(v[i]===it.a?" ok":" ko");
+      h+='<div class="'+cls+'"><span class="t">'+esc(it.l)+'</span><span class="seg" role="group">'+e.cats.map(function(c,j){return '<button type="button" data-act="pick" data-id="'+e.id+'" data-i="'+i+'" data-v="'+j+'" aria-pressed="'+(v[i]===j)+'">'+esc(c)+'</button>';}).join("")+'</span></div>';});
+    h='<div class="opts">'+h+'</div>';}
+  else if(e.k==="match"){var v2=s.v||{};
+    e.rows.forEach(function(r,i){var cls="mrow";if(ck)cls+=(v2[i]===r.a?" ok":" ko");
+      h+='<div class="'+cls+'"><span class="t">'+esc(r.l)+'</span><select data-act="sel" data-id="'+e.id+'" data-i="'+i+'" aria-label="'+esc(r.l)+'"><option value="">Choisir…</option>'+e.opts.map(function(o){return '<option'+(v2[i]===o?" selected":"")+'>'+esc(o)+'</option>';}).join("")+'</select></div>';});}
+  else if(e.k==="mcq"){var sel=s.sel||[];
+    e.opts.forEach(function(o,i){var good=e.ans.indexOf(i)>=0,on=sel.indexOf(i)>=0,cls="opt";
+      if(ck){if(on&&good)cls+=" ok";else if(on)cls+=" ko";else if(good)cls+=" miss";}
+      h+='<label class="'+cls+'"><input type="'+(e.multi?"checkbox":"radio")+'" name="q-'+e.id+'" data-act="mc" data-id="'+e.id+'" data-i="'+i+'"'+(on?" checked":"")+'><span>'+esc(o)+'</span></label>';});
+    h='<div class="opts">'+h+'</div>';}
+  else if(e.k==="order"){var o=s.o||(s.o=e.init.slice());
+    h='<ol class="ord">'+o.map(function(x,p){var cls=ck?(x===p?"ok":"ko"):"";
+      return '<li class="'+cls+'"><span class="p">'+(p+1)+'</span><span class="t">'+esc(e.items[x])+'</span><button type="button" data-act="up" data-id="'+e.id+'" data-i="'+p+'" aria-label="Monter"'+(p===0?" disabled":"")+'>↑</button><button type="button" data-act="down" data-id="'+e.id+'" data-i="'+p+'" aria-label="Descendre"'+(p===o.length-1?" disabled":"")+'>↓</button></li>';}).join("")+'</ol>';}
+  else if(e.k==="tokens"){var sl=s.sel||[];
+    h='<div class="tkbox">'+e.segs.map(function(g,i){var on=sl.indexOf(i)>=0,cls="tk";
+      if(ck){if(on&&g.e)cls+=" ok";else if(on)cls+=" ko";else if(g.e)cls+=" miss";}
+      return '<button type="button" class="'+cls+'" data-act="tok" data-id="'+e.id+'" data-i="'+i+'" aria-pressed="'+on+'">'+esc(g.t)+'</button>';}).join(" ")+'</div>';}
+  else if(e.k==="cloze"){var v4=s.v||{},bi=0;
+    h='<div class="cz">'+e.parts.map(function(p){if(typeof p==="string")return esc(p);var i=bi++,cls=ck?(v4[i]===p.a?"ok":"ko"):"";
+      return '<select class="'+cls+'" data-act="sel" data-id="'+e.id+'" data-i="'+i+'"><option value="">…</option>'+p.o.map(function(o){return '<option'+(v4[i]===o?" selected":"")+'>'+esc(o)+'</option>';}).join("")+'</select>';}).join("")+'</div>';}
+  else if(e.k==="branch"){var r=s.r||0;
+    h='<div class="chat">';
+    for(var i=0;i<Math.min(r+1,e.rounds.length);i++){var R=e.rounds[i];
+      h+='<div class="bub c"><small>Client</small>'+esc(R.c)+'</div>';
+      if(i<r){var okopt=R.o.filter(function(x){return x.ok;})[0];h+='<div class="bub v"><small>Toi</small>'+esc(okopt.t)+'</div>';}
+      else{h+='<div class="pick">'+R.o.map(function(x,j){var bad=(s.bad||[]).indexOf(j)>=0;return '<button type="button" class="'+(bad?"bad":"")+'" data-act="choose" data-id="'+e.id+'" data-i="'+j+'">'+esc(x.t)+'</button>';}).join("")+'</div>';}}
+    h+='</div>';}
+  return h;
+}
+function foot(e){
+  var s=st(e.id),h="";
+  if(e.k==="branch"){
+    var done=(s.r||0)>=e.rounds.length;
+    h+='<div class="fb '+(s.msg?"ko":(done?"ok":""))+'" id="fb-'+e.id+'">'+(s.msg?esc(s.msg):(done?"Conversation réussie"+((s.err||0)?" ("+s.err+" erreur"+(s.err>1?"s":"")+" en chemin).":" sans erreur !"):""))+'</div>';
+    if(done)h+='<div class="row"><button type="button" class="alt" data-act="retry" data-id="'+e.id+'">Rejouer la conversation</button></div>';
+    return h;
+  }
+  var ok=isOk(e);
+  h+='<div class="row"><button type="button" data-act="check" data-id="'+e.id+'">Vérifier</button>';
+  if(s.tries>=2&&!ok&&!s.shown)h+='<button type="button" class="alt" data-act="solution" data-id="'+e.id+'">Voir la solution</button>';
+  h+='</div><div class="fb'+(s.ck?(ok?" ok":" ko"):"")+'">'+(s.note?esc(s.note):(s.ck?(ok?"Bravo, c'est juste.":"Pas tout à fait : repère les couleurs, corrige et revérifie."):""))+'</div>';
+  if(s.ck&&e.expl&&(ok||s.shown||s.tries>=2))h+='<div class="expl">'+esc(e.expl)+'</div>';
+  return h;
+}
+function exHtml(e){
+  var s=st(e.id);
+  return '<h4><span class="n">'+e.n+'</span><span>'+esc(e.q)+'</span></h4>'+body(e)+foot(e);
+}
+function refreshEx(e){
+  var box=document.getElementById("ex-"+e.id);if(!box)return;
+  box.className="ex"+(isOk(e)?" okx":"");box.innerHTML=exHtml(e);
+  progress();
+}
+/* ----- Courriel ----- */
+function mailText(f){return norm(f?S["mail."+f]:MAILFIELDS.map(function(x){return S["mail."+x.id]||"";}).join("\n"));}
+function mailHtml(e){
+  return '<h4><span class="n">'+e.n+'</span><span>'+esc(e.q)+'</span></h4><div class="fiche">'+MAILFIELDS.map(function(f){
+    var k="mail."+f.id,ctl=f.type==="area"?'<textarea data-act="mail" data-k="'+k+'" rows="'+(f.rows||2)+'" aria-label="'+f.label+'"></textarea>':'<input type="text" data-act="mail" data-k="'+k+'" aria-label="'+f.label+'">';
+    return '<div class="fr"><span>'+f.label+'</span>'+ctl+'</div>';}).join("")+'</div>'+
+  '<ul class="chips" id="chips">'+MAILCHECKS.map(function(c){return '<li class="off">'+esc(c.l)+'</li>';}).join("")+'</ul><div class="warn" id="mwarn"></div>'+
+  '<div><button type="button" class="alt" id="mmodel" disabled>Voir une proposition de courriel</button></div><div class="model" id="mmodelbox" hidden><strong>Une proposition possible</strong><p>'+esc(MAILMODEL)+'</p></div>'+
+  '<div class="send"><h3>Je rends mon courriel</h3><div class="id-grid"><label class="f">Nom<input type="text" id="id_nom" autocomplete="family-name"></label><label class="f">Prénom<input type="text" id="id_prenom" autocomplete="given-name"></label><label class="f">Classe<input type="text" id="id_classe" value="2de MRC"></label><label class="f">Date<input type="text" id="id_date"></label></div>'+
+  '<div class="row"><button type="button" id="btnPdf">Enregistrer mon courriel en PDF</button><button type="button" class="alt" id="btnCopy">Copier mon courriel en texte</button></div><div id="sendMsg" class="msg" role="status"></div><p class="hint">Seul le courriel est enregistré dans le PDF. Envoie-le ensuite par mail à ton professeur avec l\'objet « Révision communication – NOM Prénom – classe ».</p><textarea id="fallback" rows="8" hidden readonly aria-label="Mon courriel en texte"></textarea></div>';
+}
+function updMail(){
+  var ul=document.getElementById("chips");if(!ul)return;
+  [].forEach.call(ul.children,function(li,i){var c=MAILCHECKS[i];li.className=c.re.test(mailText(c.f))?"on":"off";});
+  var w=[];MAILWARN.forEach(function(x){if(x.re.test(mailText(x.f))&&w.indexOf(x.msg)<0)w.push(x.msg);});
+  document.getElementById("mwarn").textContent=w.join(" ");
+  var n=MAILFIELDS.reduce(function(a,f){return a+((S["mail."+f.id]||"").trim().length);},0);
+  document.getElementById("mmodel").disabled=n<40;
+}
+/* ----- Rendu des modules ----- */
+var main=document.getElementById("main"),tabs=document.getElementById("tabs"),cur=+(S._tab||0);
+function renderModule(i){
+  cur=i;S._tab=i;save();var m=M[i],h='<div class="mhead"><h2>'+esc(m.title)+'</h2><p>'+esc(m.intro)+'</p></div><div class="wrap-ex" style="display:flex;flex-direction:column;gap:14px">';
+  m.items.forEach(function(it){
+    if(it.k==="html")h+=it.h;
+    else if(it.k==="mail")h+='<div class="ex" id="ex-mail">'+mailHtml(it)+'</div>';
+    else h+='<div class="ex'+(isOk(it)?" okx":"")+'" id="ex-'+it.id+'">'+exHtml(it)+'</div>';});
+  h+='</div><div class="nav">'+(i>0?'<button type="button" class="alt" data-act="go" data-i="'+(i-1)+'">← Module précédent</button>':'<span></span>')+(i<M.length-1?'<button type="button" data-act="go" data-i="'+(i+1)+'">Module suivant →</button>':'')+'</div>';
+  main.innerHTML=h;
+  if(m.items.some(function(x){return x.k==="mail";})){
+    MAILFIELDS.forEach(function(f){var el=main.querySelector('[data-k="mail.'+f.id+'"]');if(S["mail."+f.id])el.value=S["mail."+f.id];});
+    var idm={id_nom:"_nom",id_prenom:"_prenom",id_classe:"_classe",id_date:"_date"};
+    Object.keys(idm).forEach(function(k){var el=document.getElementById(k);if(S[idm[k]]!=null)el.value=S[idm[k]];else if(k==="id_date")el.value=new Date().toLocaleDateString("fr-FR");
+      el.addEventListener("input",function(){S[idm[k]]=el.value;save();});});
+    updMail();
+  }
+  [].forEach.call(tabs.children,function(b,j){b.setAttribute("aria-selected",j===i);});
+  window.scrollTo({top:0});
+}
+function modDone(mi){var l=EX.filter(function(e){return e.mi===mi&&e.k!=="mail";});return l.length&&l.every(isOk);}
+function progress(){
+  var l=EX.filter(function(e){return e.k!=="mail";}),n=l.filter(isOk).length;
+  document.getElementById("st_n").textContent=n+"/"+l.length;
+  document.getElementById("st_bar").style.width=(100*n/l.length)+"%";
+  [].forEach.call(tabs.children,function(b,j){b.className=modDone(j)?"done":"";});
+}
+M.forEach(function(m,i){var b=document.createElement("button");b.type="button";b.textContent=m.title.split(" · ")[0]+" · "+m.title.split(" · ")[1].split(" ").slice(0,2).join(" ");b.title=m.title;b.setAttribute("aria-selected","false");b.addEventListener("click",function(){renderModule(i);});tabs.appendChild(b);});
+renderModule(cur>=0&&cur<M.length?cur:0);progress();
+
+/* ----- Événements ----- */
+function reset(e){var s=st(e.id);s.ck=false;s.note="";}
+main.addEventListener("click",function(ev){
+  var b=ev.target.closest("[data-act]");if(!b||b.tagName==="SELECT"||b.tagName==="INPUT"||b.tagName==="TEXTAREA")return;
+  var a=b.getAttribute("data-act"),id=b.getAttribute("data-id"),e=id?BY[id]:null,i=+b.getAttribute("data-i");
+  if(a==="go"){renderModule(i);return;}
+  if(!e)return;var s=st(id);
+  if(a==="pick"){s.v=s.v||{};s.v[i]=+b.getAttribute("data-v");reset(e);s.shown=false;}
+  else if(a==="tok"){s.sel=s.sel||[];var p=s.sel.indexOf(i);if(p>=0)s.sel.splice(p,1);else s.sel.push(i);reset(e);s.shown=false;}
+  else if(a==="up"||a==="down"){var o=s.o||(s.o=e.init.slice()),t=a==="up"?i-1:i+1;var tmp=o[i];o[i]=o[t];o[t]=tmp;reset(e);s.shown=false;}
+  else if(a==="check"){
+    var any=false;
+    if(e.k==="sort"||e.k==="match"||e.k==="cloze"){var need=e.k==="sort"?e.items.length:e.k==="match"?e.rows.length:e.parts.filter(function(p){return typeof p!=="string";}).length;any=Object.keys(s.v||{}).filter(function(k){return s.v[k]!==""&&s.v[k]!=null;}).length>=need;
+      if(!any){s.ck=false;s.note="Complète toutes les lignes avant de vérifier.";refreshEx(e);var f=document.querySelector("#ex-"+id+" .fb");if(f)f.className="fb ko";save();return;}}
+    if(e.k==="mcq"&&!(s.sel&&s.sel.length)){s.note="Choisis au moins une réponse.";refreshEx(e);var f2=document.querySelector("#ex-"+id+" .fb");if(f2)f2.className="fb ko";return;}
+    s.ck=true;s.note="";s.tries=(s.tries||0)+1;
+    if(isOk(e)){s.tries=0;}
+  }
+  else if(a==="solution"){
+    s.shown=true;s.ck=true;s.note="Solution affichée : refais l'exercice pour le valider.";
+    if(e.k==="sort"){s.v={};e.items.forEach(function(it,j){s.v[j]=it.a;});}
+    if(e.k==="match"){s.v={};e.rows.forEach(function(r,j){s.v[j]=r.a;});}
+    if(e.k==="mcq")s.sel=e.ans.slice();
+    if(e.k==="order")s.o=e.items.map(function(_,j){return j;});
+    if(e.k==="tokens")s.sel=e.segs.map(function(g,j){return g.e?j:-1;}).filter(function(j){return j>=0;});
+    if(e.k==="cloze"){s.v={};var bi=0;e.parts.forEach(function(p){if(typeof p!=="string")s.v[bi++]=p.a;});}
+  }
+  else if(a==="choose"){
+    var r=s.r||0,R=e.rounds[r],opt=R.o[i];
+    if(opt.ok){s.r=r+1;s.msg="";s.bad=[];}
+    else{s.msg=opt.f;s.err=(s.err||0)+1;s.bad=(s.bad||[]).concat([i]);}
+  }
+  else if(a==="retry"){s.r=0;s.err=0;s.msg="";s.bad=[];}
+  save();refreshEx(e);
+});
+main.addEventListener("change",function(ev){
+  var t=ev.target,a=t.getAttribute("data-act"),id=t.getAttribute("data-id"),e=id?BY[id]:null;
+  if(a==="mc"&&e){var s=st(id),i=+t.getAttribute("data-i"),sel=s.sel||[];
+    if(e.multi){var p=sel.indexOf(i);if(t.checked&&p<0)sel.push(i);if(!t.checked&&p>=0)sel.splice(p,1);}else sel=[i];
+    s.sel=sel;reset(e);s.shown=false;save();refreshEx(e);}
+  else if(a==="sel"&&e){var s2=st(id);s2.v=s2.v||{};s2.v[+t.getAttribute("data-i")]=t.value;reset(e);s2.shown=false;save();refreshEx(e);}
+});
+main.addEventListener("input",function(ev){
+  var t=ev.target;if(t.getAttribute("data-act")!=="mail")return;
+  S[t.getAttribute("data-k")]=t.value;save();updMail();
+});
+main.addEventListener("click",function(ev){
+  var t=ev.target;
+  if(t.id==="mmodel"){document.getElementById("mmodelbox").hidden=false;t.hidden=true;}
+  if(t.id==="btnPdf")doPdf();
+  if(t.id==="btnCopy")doCopy();
+});
+
+/* ----- Export du courriel ----- */
+function ident(){function g(i){var el=document.getElementById(i);return el?(el.value||"").trim():"";}return{nom:g("id_nom"),prenom:g("id_prenom"),classe:g("id_classe"),date:g("id_date")};}
+function mailVals(){return MAILFIELDS.map(function(f){return{label:f.label,v:(S["mail."+f.id]||"").trim()};});}
+function buildPdf(){
+  var J=window.jspdf&&window.jspdf.jsPDF;if(!J)return null;
+  var d=new J({unit:"mm",format:"a4"}),W=210,Mg=20,TW=W-2*Mg,y=0,I=ident(),V={};mailVals().forEach(function(x){V[x.label]=x.v;});
+  d.setFillColor(27,95,193);d.rect(0,0,W,22,"F");d.setTextColor(255);d.setFont("helvetica","bold");d.setFontSize(15);d.text("Révision : la communication professionnelle",Mg,10);
+  d.setFont("helvetica","normal");d.setFontSize(10);d.text("Réponse écrite à Mme Garnier · 2de Bac Pro MRC",Mg,16.5);
+  y=32;d.setTextColor(20,38,61);d.setFont("helvetica","bold");d.setFontSize(10.5);
+  d.text("Nom : "+(I.nom||"……")+"     Prénom : "+(I.prenom||"……")+"     Classe : "+I.classe+"     Date : "+I.date,Mg,y);y+=5;
+  d.setDrawColor(200);d.line(Mg,y,W-Mg,y);y+=9;
+  function line(t,o){o=o||{};d.setFont("helvetica",o.b?"bold":"normal");d.setFontSize(11);d.setTextColor(o.dim?140:20,o.dim?140:38,o.dim?140:61);
+    d.splitTextToSize(String(t),TW).forEach(function(l){if(y>280){d.addPage();y=20;}d.text(l,Mg,y);y+=5.4;});}
+  line("De : "+((I.prenom+" "+I.nom).trim()||"……")+" – Jardiland Alençon");
+  line("À : Léa Garnier");
+  line("Objet : "+(V["Objet"]||"(non rempli)"),{b:true});y+=5;
+  line(V["Formule d'appel"]||"(formule d'appel manquante)",{dim:!V["Formule d'appel"]});y+=3;
+  (V["Corps du message"]||"(corps du message manquant)").split(/\n+/).forEach(function(p){line(p,{dim:!V["Corps du message"]});y+=2.5;});y+=3;
+  line(V["Formule de politesse"]||"(formule de politesse manquante)",{dim:!V["Formule de politesse"]});y+=3;
+  (V["Signature"]||"(signature manquante)").split(/\n+/).forEach(function(p){line(p,{dim:!V["Signature"]});});
+  d.setFont("helvetica","normal");d.setFontSize(8);d.setTextColor(130);d.text((I.prenom+" "+I.nom).trim()+" · Courriel de révision",Mg,293);
+  return d;
+}
+function say(t,ok){var m=document.getElementById("sendMsg");if(m){m.textContent=t;m.className="msg "+(ok?"ok":"ko");}}
+function checkId(){var I=ident();if(!I.nom||!I.prenom){say("Remplis ton nom et ton prénom avant d'enregistrer.",false);return false;}
+  var n=MAILFIELDS.reduce(function(a,f){return a+((S["mail."+f.id]||"").trim().length);},0);if(n<40){say("Écris d'abord ton courriel.",false);return false;}return true;}
+function doPdf(){
+  if(!checkId())return;
+  var d=buildPdf();if(!d){say("Le module PDF n'a pas pu se charger. Utilise « Copier mon courriel en texte ».",false);return;}
+  var I=ident(),fname=("Courriel_revision_"+I.nom+"_"+I.prenom).replace(/[^A-Za-z0-9À-ÿ_-]+/g,"_")+".pdf",blob=d.output("blob");
+  Promise.resolve(window.claude&&window.claude.use?window.claude.use("downloads"):null).then(function(dl){
+    if(!dl){say("L'enregistrement direct n'est pas disponible ici. Utilise « Copier mon courriel en texte » et colle-le dans ton mail.",false);return;}
+    return dl.save({filename:fname,data:blob}).then(function(){say("PDF enregistré. Joins-le à ton mail pour le professeur.",true);},function(err){
+      say(err&&err.code==="declined"?"Enregistrement annulé. Tu peux recommencer.":"L'enregistrement a échoué. Utilise « Copier mon courriel en texte ».",false);});
+  }).catch(function(){say("L'enregistrement a échoué. Utilise « Copier mon courriel en texte ».",false);});
+}
+function doCopy(){
+  if(!checkId())return;var I=ident(),V={};mailVals().forEach(function(x){V[x.label]=x.v;});
+  var t="Objet : "+V["Objet"]+"\n\n"+V["Formule d'appel"]+"\n\n"+V["Corps du message"]+"\n\n"+V["Formule de politesse"]+"\n"+V["Signature"]+"\n\n("+I.prenom+" "+I.nom+", "+I.classe+", "+I.date+")";
+  var fb=document.getElementById("fallback");fb.value=t;fb.hidden=false;
+  var done=function(){say("Texte copié. Colle-le dans ton mail.",true);},fail=function(){fb.focus();fb.select();say("Sélectionne le texte ci-dessous, copie-le (Ctrl+C) et colle-le dans ton mail.",false);};
+  try{navigator.clipboard.writeText(t).then(done,fail);}catch(e){fail();}
+}
+if(location.hash==="#test")window.__T={M:M,EX:EX,S:S,BY:BY,isOk:isOk,renderModule:renderModule};
+})();
+</script>
+
+</body></html>
