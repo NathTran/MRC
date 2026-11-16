@@ -1,0 +1,58 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Quiz final — Communication professionnelle</title>
+<style>
+:root{--bg:#14213d;--card:#1f2f55;--mut:#b8c4dd;--a:#1b8a8f;--b:#e8832a;--c:#4c9f50;--d:#7d5ba6}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:#fff;font-family:Arial,Helvetica,sans-serif;display:flex;flex-direction:column}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;color:var(--mut);font-size:clamp(14px,1.6vw,22px)}
+.bar{height:10px;background:#0e1830}.bar i{display:block;height:100%;background:var(--b);width:100%}
+main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:2vh 5vw;max-width:1500px;margin:0 auto;width:100%}
+h1{font-size:clamp(26px,4vw,58px);line-height:1.2;margin:0 0 3vh}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:2vh 2vw}
+.opt{display:flex;align-items:center;gap:1.2vw;border-radius:14px;padding:2.2vh 1.6vw;font-size:clamp(18px,2.6vw,38px);min-height:12vh}
+.opt b{flex:0 0 auto;display:grid;place-items:center;width:2.2em;height:2.2em;border-radius:50%;background:rgba(0,0,0,.25);font-size:.9em}
+.o0{background:var(--a)}.o1{background:var(--b)}.o2{background:var(--c)}.o3{background:var(--d)}
+footer{display:flex;justify-content:center;align-items:center;gap:12px;padding:14px;flex-wrap:wrap}
+button{background:#2c3e6b;color:#fff;border:0;border-radius:10px;padding:12px 22px;font-size:clamp(14px,1.5vw,20px);cursor:pointer;font-family:inherit}
+button.on{background:var(--b);font-weight:bold}button:disabled{opacity:.35;cursor:default}
+.tm{font-size:clamp(20px,2.4vw,34px);font-weight:bold;font-variant-numeric:tabular-nums}.tm.low{color:#ff6b6b}
+.center{text-align:center}.big{font-size:clamp(20px,2.6vw,36px);color:var(--mut)}
+.dur{display:flex;gap:8px;align-items:center;color:var(--mut);font-size:clamp(13px,1.4vw,18px)}
+@media(max-width:700px){.opts{grid-template-columns:1fr}}
+</style></head><body>
+<header><span>Quiz final · 2de Bac Pro MRC</span><span id="cnt"></span><span>⏱ <span class="tm" id="tm">10</span> s</span></header>
+<div class="bar"><i id="pg"></i></div>
+<main id="m"></main>
+<footer>
+<div class="dur">Temps par question :
+<button class="d" data-s="10">10 s</button><button class="d" data-s="15">15 s</button><button class="d" data-s="20">20 s</button><button class="d" data-s="30">30 s</button></div>
+<button id="prev">← Précédent</button><button id="pause">⏸ Pause</button><button id="next" class="on">Suivant →</button></footer>
+<script>
+const Q=[["Quand le vendeur répond au client, qui est l'émetteur ?", ["Le client", "Le vendeur", "Le responsable", "Le magasin"]], ["« À 18h15, au comptoir du magasin » correspond à…", ["Le message", "Le canal", "Le contexte", "L'intention"]], ["Le feedback (retour), c'est…", ["La réaction du récepteur (réponse, regard, hochement de tête)", "Ce qui gêne la communication", "Le lieu de la conversation", "Le produit vendu"]], ["Quelle phrase d'accueil est professionnelle ?", ["« Salut, tu veux quoi ? »", "« Bonjour, que puis-je faire pour vous ? »", "« Vous voulez quoi ? »", "« Ouais, dites-moi. »"]], ["Le produit est en rupture. Quelle réponse est la meilleure ?", ["« Y en a plus, désolé. »", "« Non, on n'en a pas. »", "« Il n'est plus disponible pour le moment, je peux vous le commander. »", "« Revenez plus tard. »"]], ["Un client dit : « Je veux voir à quoi ça ressemble. » Son profil dominant est…", ["Auditif", "Kinesthésique", "Indécis", "Visuel"]], ["Pour un client AUDITIF, quelle phrase est la mieux adaptée ?", ["« Écoutez comme il est silencieux. »", "« Regardez ce design. »", "« Touchez cette matière. »", "« Comparez les prix. »"]], ["Un client dit : « Je cherche une veste dans laquelle je me sens bien. » Son profil est…", ["Visuel", "Auditif", "Les trois à la fois", "Kinesthésique"]], ["À quoi sert la reformulation (« Si j'ai bien compris… ») ?", ["À gagner du temps", "À vérifier qu'on a bien compris le besoin du client", "À faire parler plus longtemps", "À changer de sujet"]], ["Votre responsable dit : « Va préparer la tête de gondole avec les promos. » Quelle question de contrôle poser ?", ["« Pourquoi moi ? »", "« C'est obligatoire ? »", "« Je peux le faire plus tard ? »", "« De quelles promotions s'agit-il, et pour quelle heure ? »"]], ["Dans la situation du client au comptoir, quel est le canal de communication ?", ["La voix, face à face", "L'écrit", "Le téléphone", "Le mail"]], ["Qu'appelle-t-on le « bruit » dans une situation de communication ?", ["Un son agréable", "Le message lui-même", "La réponse du client", "Tout ce qui gêne la bonne réception du message"]], ["Laquelle de ces expressions est du registre familier ?", ["« Chuis occupé là ! »", "« Je vous prie de patienter. »", "« Un instant, je suis à vous. »", "« Je me renseigne. »"]], ["Quelle phrase fait patienter un client poliment ?", ["« Attends deux secondes ! »", "« Vous voyez pas que j'suis occupé ? »", "« Je vous prie de patienter un instant. »", "« Chuis occupé là. »"]], ["Quelle reformulation professionnelle de « Ça coûte une blinde mais c'est du bon matos » ?", ["« C'est cher mais bien. »", "« Prenez-le, vous verrez. »", "« C'est un bon produit pas cher. »", "« Son prix est plus élevé, mais c'est un produit de très bonne qualité. »"]], ["Un client dit : « J'ai entendu dire que cet appareil fait du bruit… ». Son profil ?", ["Visuel", "Kinesthésique", "Auditif", "Indécis"]], ["Quel mot employer avec un client KINESTHÉSIQUE ?", ["« Regardez »", "« Touchez, essayez »", "« Écoutez »", "« Comparez »"]], ["Que faire avec un client VISUEL ?", ["Lui montrer le produit, ses couleurs et sa finition", "Lui faire essayer sans parler", "Lui lire la notice à voix haute", "Ne lui parler que du prix"]], ["Quelle reformulation est la meilleure pour le client de l'ordinateur à 700 € ?", ["« Vous voulez un ordinateur ? »", "« Il vous faut le moins cher. »", "« Si j'ai bien compris : un portable léger, autonome, à moins de 700 €. »", "« D'accord, suivez-moi. »"]], ["La consigne de votre responsable est incomplète. Que faites-vous ?", ["Je la fais au hasard", "Je ne fais rien", "Je demande poliment les précisions manquantes", "Je la fais faire par un collègue"]]];
+const L=['A','B','C','D'];let i=-1,dur=10,left=10,t=null,paused=false;
+const m=document.getElementById('m'),tm=document.getElementById('tm'),bar=document.getElementById('pg');
+function stop(){clearInterval(t);t=null}
+function start(){stop();left=dur;paint();paused=false;document.getElementById('pause').textContent='⏸ Pause';
+  t=setInterval(()=>{if(paused)return;left--;paint();if(left<=0){stop();setTimeout(()=>go(1),600)}},1000)}
+function paint(){tm.textContent=left;tm.classList.toggle('low',left<=3);bar.style.width=(left/dur*100)+'%'}
+function show(){
+  stop();const nx=document.getElementById('next');
+  document.getElementById('prev').disabled=i<=-1;
+  if(i===-1){document.getElementById('cnt').textContent='';
+    m.className='center';m.innerHTML='<h1>Quiz final</h1><p class="big">20 questions · une seule bonne réponse par question.<br>Entourez A, B, C ou D dans la grille de votre fiche.<br>Les questions défilent toutes seules : <b>ne regardez pas votre voisin !</b></p><p class="big">Choisissez le temps par question, puis appuyez sur → ou « Suivant ».</p>';
+    nx.textContent='Commencer →';tm.textContent=dur;bar.style.width='100%';document.getElementById('pause').style.display='none';return}
+  document.getElementById('pause').style.display='';
+  if(i>=Q.length){document.getElementById('cnt').textContent='Fin';
+    m.className='center';m.innerHTML='<h1>Fin du quiz !</h1><p class="big">Posez vos stylos.<br>On passe à la correction.</p>';
+    nx.disabled=true;document.getElementById('pause').style.display='none';tm.textContent='—';bar.style.width='0';return}
+  nx.disabled=false;nx.textContent='Suivant →';
+  const q=Q[i];document.getElementById('cnt').textContent='Question '+(i+1)+' / '+Q.length;m.className='';
+  m.innerHTML='<h1>'+q[0]+'</h1><div class="opts">'+q[1].map((o,k)=>'<div class="opt o'+k+'"><b>'+L[k]+'</b><span>'+o+'</span></div>').join('')+'</div>';
+  start()}
+function go(d){const n=i+d;if(n<-1||n>Q.length)return;i=n;show()}
+document.getElementById('next').onclick=()=>go(1);document.getElementById('prev').onclick=()=>go(-1);
+document.getElementById('pause').onclick=()=>{paused=!paused;document.getElementById('pause').textContent=paused?'▶ Reprendre':'⏸ Pause'};
+document.querySelectorAll('.d').forEach(b=>b.onclick=()=>{dur=+b.dataset.s;document.querySelectorAll('.d').forEach(x=>x.classList.toggle('on',x===b));if(i>=0&&i<Q.length)start();else{tm.textContent=dur}});
+document.querySelector('.d[data-s="10"]').classList.add('on');
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='PageDown')go(1);else if(e.key==='ArrowLeft'||e.key==='PageUp')go(-1);else if(e.key===' '){e.preventDefault();if(i>=0&&i<Q.length)document.getElementById('pause').click()}});
+show();
+</script></body></html>
