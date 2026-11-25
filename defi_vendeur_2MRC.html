@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Défi du vendeur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday, ludique : escape game de révision pour des 2de MRC en binôme
+   IDEA le plan d'un magasin de sport : chaque rayon est une épreuve, chaque rayon validé livre une lettre du code
+   PICTURE le plan du magasin (6 rayons en tuiles) avec la bande des lettres C-L-I-E-N-T à reconstituer
+   COLOUR blanc, bleu magasin #0b3d91, orange balise #ff6a13, une teinte par rayon pour les tuiles
+   TYPE Barlow Condensed (signalétique) + Barlow
+   LAYOUT colonne 860px ; plan en grille 3x2 sur ordinateur, 2x3 à 720px, 1 colonne sur téléphone */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0d1420);--ink:light-dark(#111827,#eef2f8);--mute:light-dark(#4b5563,#a9b4c4);--blue:light-dark(#0b3d91,#6d9bf2);--head:light-dark(#0b3d91,#14264a);--orange:#ff6a13;--card:light-dark(#f3f6fb,#172133);--line:light-dark(#d6deea,#2b3a52);--ok:light-dark(#11804a,#3ccf86);--okBg:light-dark(#e5f6ec,#123726);--ko:light-dark(#c62828,#ff7a7a);--koBg:light-dark(#fdeaea,#3a1717)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.55 Barlow,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3,.disp{font-family:"Barlow Condensed",Barlow,sans-serif;font-weight:700;line-height:1.05;letter-spacing:-.01em}
+header{background:var(--head);color:#fff;padding:16px max(5vw,16px)}
+header .in{max-width:860px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:clamp(26px,4.5vw,34px);margin:0}
+header .meta{display:flex;gap:14px;font:600 16px Barlow,sans-serif;color:#d7e3fb;flex-wrap:wrap}
+header .meta b{color:#fff;font-variant-numeric:tabular-nums}
+main{max-width:860px;margin:0 auto;padding:18px 16px 40px}
+.code{display:flex;gap:8px;justify-content:center;margin:4px 0 18px}
+.code span{width:46px;height:54px;border-radius:8px;border:3px dashed var(--line);display:grid;place-items:center;font:700 30px "Barlow Condensed";color:var(--mute)}
+.code span.got{border:3px solid var(--orange);background:var(--orange);color:#fff}
+.map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.rayon{position:relative;text-align:left;border:0;border-radius:12px;padding:14px;min-height:150px;color:#fff;cursor:pointer;font:inherit;display:flex;flex-direction:column;justify-content:space-between;gap:8px;overflow:hidden}
+.rayon h3{font-size:24px;margin:0}
+.rayon small{display:block;font-size:14px;opacity:.95}
+.rayon .lt{position:absolute;right:12px;bottom:6px;font:700 64px/1 "Barlow Condensed";opacity:.28}
+.rayon .st{font:600 14px Barlow,sans-serif;background:rgba(0,0,0,.22);border-radius:20px;padding:3px 10px;align-self:flex-start}
+.rayon[disabled]{filter:grayscale(.85);opacity:.55;cursor:not-allowed}
+.rayon:focus-visible,.btn:focus-visible,.opt:focus-visible,.cat:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.intro{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:end;margin-bottom:14px}
+.intro h2{font-size:clamp(28px,5vw,40px);margin:0 0 4px}
+.intro p{margin:0;color:var(--mute)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.tag{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#fff;padding:9px 16px;font:600 15px Barlow,sans-serif;background:var(--blue)}
+.tag b{font-family:"Barlow Condensed";font-size:19px}
+.pad{padding:16px}
+.pad p{margin:0 0 10px}
+.cons{font-weight:600}
+label.cons{display:block;margin-bottom:6px}
+.item{background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.item.good{border-color:var(--ok);background:var(--okBg)}
+.item.bad{border-color:var(--ko);background:var(--koBg)}
+.item .why{font-size:15px;color:var(--mute);margin-top:6px}
+.cats{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.cat{font:600 15px Barlow,sans-serif;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:20px;padding:7px 14px;min-height:40px;cursor:pointer}
+.cat.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.cat.ans{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok) inset}
+select,input[type=text],textarea{font:16px Barlow,sans-serif;padding:9px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+textarea{min-height:90px;resize:vertical;line-height:1.45}
+textarea.long{min-height:260px}
+select:focus,input:focus,textarea:focus{outline:3px solid var(--orange);outline-offset:1px}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,15em);gap:10px;align-items:center}
+.say{display:flex;gap:10px;margin:0 0 8px;align-items:flex-start}
+.who{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font:700 14px Barlow,sans-serif;color:#fff;background:var(--orange)}
+.who.v{background:var(--blue)}
+.bub{background:var(--bg);border:1px solid var(--line);border-radius:4px 14px 14px 14px;padding:7px 12px}
+.bub small{display:block;color:var(--mute);font-size:13px;font-weight:600}
+button.line{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;font:inherit;color:inherit;background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px;cursor:pointer}
+button.line.on{border-color:var(--orange);background:color-mix(in srgb,var(--orange) 12%,var(--bg))}
+button.line.good{border-color:var(--ok);background:var(--okBg)}
+button.line.bad{border-color:var(--ko);background:var(--koBg)}
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;font:500 16px/1.4 Barlow,sans-serif;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:11px 14px;min-height:46px;cursor:pointer;margin-bottom:9px}
+.opt .k{flex:none;width:26px;height:26px;border-radius:6px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;font:700 14px Barlow,sans-serif}
+.opt.on{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 10%,var(--bg))}
+.opt.good{border-color:var(--ok);background:var(--okBg)}
+.opt.bad{border-color:var(--ko);background:var(--koBg)}
+.pieces{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.piece{font:600 16px Barlow,sans-serif;border:2px dashed var(--blue);background:var(--bg);color:var(--ink);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:44px}
+.piece[disabled]{opacity:.3;cursor:default}
+.seq{min-height:52px;border:2px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;background:var(--bg)}
+.seq span{background:var(--blue);color:#fff;border-radius:8px;padding:7px 11px;font-weight:600}
+.seq span.good{background:var(--ok)}.seq span.bad{background:var(--ko)}
+input[type=range]{width:100%;accent-color:var(--orange);height:32px}
+.meter{display:flex;justify-content:space-between;font-size:14px;color:var(--mute)}
+.val{font:700 26px "Barlow Condensed";color:var(--blue);white-space:nowrap}
+.model{border-left:5px solid var(--ok);background:var(--okBg);padding:10px 12px;border-radius:8px;margin:8px 0;white-space:pre-wrap}
+.chk{display:flex;gap:10px;align-items:flex-start;margin:6px 0;font-size:16px;cursor:pointer}
+.chk input{width:22px;height:22px;flex:none;margin-top:2px;accent-color:var(--ok)}
+.fb{padding:12px 14px;border-radius:10px;border-left:5px solid var(--ok);background:var(--okBg);margin-top:4px}
+.fb.mid{border-color:var(--orange);background:color-mix(in srgb,var(--orange) 12%,var(--bg))}
+.fb b{font-family:"Barlow Condensed";font-size:21px}
+.btn{font:700 18px "Barlow Condensed",Barlow,sans-serif;letter-spacing:.02em;border:0;border-radius:10px;padding:11px 20px;min-height:48px;cursor:pointer;background:var(--orange);color:#fff}
+.btn.sec{background:transparent;color:var(--blue);border:2px solid var(--blue)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.act{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:12px}
+.steps{display:flex;gap:6px;margin:0 0 12px}
+.steps i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.steps i.d{background:var(--orange)}.steps i.c{background:var(--blue)}
+.timer{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:6px 0 12px}
+.timer i{display:block;height:100%;background:var(--orange)}
+table.st{border-collapse:collapse;width:100%;font-size:15px;margin:6px 0 10px;background:var(--bg)}
+table.st th,table.st td{border:1px solid var(--line);padding:6px 8px;text-align:left}
+table.st th{background:var(--blue);color:#fff}
+.memo td:first-child{font-weight:600;width:30%}
+.cert{text-align:center;padding:24px 16px;border:4px double var(--orange);border-radius:14px;background:var(--bg)}
+.cert .big{font:700 clamp(48px,10vw,72px)/1 "Barlow Condensed";color:var(--blue)}
+.note{font-size:14px;color:var(--mute);margin-top:22px}
+#msg{text-align:right;color:var(--mute);font-size:15px;margin:6px 0 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:grid;place-items:center;padding:16px;z-index:9}
+.modal .card{max-width:420px;margin:0}
+.memo-g{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.mc{min-height:104px;border-radius:10px;border:2px solid var(--line);background:var(--blue);color:#fff;font:600 15px/1.3 Barlow,sans-serif;padding:8px;cursor:pointer;display:grid;place-items:center;text-align:center}
+.mc.back{font:700 34px "Barlow Condensed",sans-serif;background:repeating-linear-gradient(45deg,var(--blue) 0 10px,color-mix(in srgb,var(--blue) 85%,#fff) 10px 20px)}
+.mc.up{background:var(--bg);color:var(--ink);border-color:var(--orange)}
+.mc.t{font-weight:700;font-size:17px}
+.mc.found{background:var(--okBg);color:var(--ink);border-color:var(--ok);cursor:default}
+.trous{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px;line-height:2.3}
+.trous select{width:auto;display:inline-block;padding:4px 8px;font-size:16px;margin:0 2px;max-width:100%}
+.trous select.good{border-color:var(--ok);background:var(--okBg)}
+.trous select.bad{border-color:var(--ko);background:var(--koBg)}
+.trous .cor{color:var(--ok);font-weight:600;font-size:14px}
+.bank{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.bank span{border:1px dashed var(--blue);border-radius:6px;padding:2px 8px;font-size:15px;background:var(--bg)}
+.cwrap{overflow-x:auto;padding-bottom:6px}
+.cw{display:grid;gap:2px;width:max-content;margin:0 auto 12px}
+.cw div{width:clamp(24px,6.4vw,34px);height:clamp(24px,6.4vw,34px);position:relative}
+.cw .x{background:transparent}
+.cw input{width:100%;height:100%;padding:0;border:2px solid var(--blue);border-radius:3px;text-align:center;font:700 clamp(14px,3.6vw,19px) Barlow,sans-serif;text-transform:uppercase;background:var(--bg);color:var(--ink)}
+.cw input:focus{outline:3px solid var(--orange);outline-offset:0;background:color-mix(in srgb,var(--orange) 12%,var(--bg))}
+.cw input.good{background:var(--okBg);border-color:var(--ok)}
+.cw input.bad{background:var(--koBg);border-color:var(--ko)}
+.cw b{position:absolute;left:2px;top:0;font-size:9px;line-height:1;color:var(--mute);pointer-events:none;z-index:1}
+.clues{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;font-size:15px}
+.clues h4{margin:0 0 4px;font:700 19px "Barlow Condensed",sans-serif}
+.clues p{margin:0 0 5px;cursor:pointer}
+.clues p.ok{color:var(--ok)}
+.clues p.ko{color:var(--ko)}
+@media(max-width:720px){.map{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.memo-g{grid-template-columns:repeat(3,minmax(0,1fr))}.clues{grid-template-columns:minmax(0,1fr)}.map{grid-template-columns:minmax(0,1fr)}.rayon{min-height:112px}.row2,.intro{grid-template-columns:minmax(0,1fr)}.code span{width:40px;height:48px;font-size:26px}}
+@media print{header,.act,.note,.code,#msg{display:none}}
+</style>
+</head>
+<body>
+<header><div class="in"><h1>Le Défi du vendeur — Sport Évasion</h1><div class="meta" id="meta"></div></div></header>
+<main><div id="app"></div>
+<p class="note"><span id="prof">Mme TRAN</span> — 2de Bac Pro MRC — révision « La communication professionnelle ». Situations fictives créées pour l'entraînement. Vos réponses restent sur cet ordinateur.</p></main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+{
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const ACC=["Un bon vendeur, c'est surtout quelqu'un qui parle bien.","Le client retient surtout les mots que le vendeur prononce.","Reformuler, c'est parler de façon plus professionnelle."];
+const ACCO=["D'accord","Pas sûr(e)","Pas d'accord"];
+const CWDATA=[["RECEPTEUR", "Celui qui reçoit le message", 12, 5, "a"], ["EMETTEUR", "Celui qui envoie le message", 5, 5, "d"], ["SBAM", "Sourire, Bonjour, Au revoir, Merci", 6, 2, "a"], ["FAMILIER", "Registre de langue interdit face au client", 5, 13, "d"], ["FEEDBACK", "La réponse du récepteur", 10, 4, "a"], ["INTIME", "Zone de moins de 45 cm, où l'on n'entre jamais", 8, 3, "a"], ["OUVERTE", "Question qui laisse le client s'exprimer", 2, 8, "d"], ["SYNTHESE", "Reformulation qui résume toutes les attentes du client", 0, 2, "d"], ["EXCUSES", "On les présente au client mécontent, au nom du magasin", 3, 5, "a"], ["BRUIT", "Tout ce qui gêne le message", 6, 7, "a"], ["ECHO", "Reformulation qui reprend les derniers mots du client", 4, 0, "a"], ["VISUEL", "Client sensible aux couleurs et à l'aspect", 0, 0, "a"], ["CANAL", "Le moyen par lequel passe le message : oral, téléphone, écrit", 2, 0, "a"]];
+const LV=[
+{l:"N",n:"Rayon Communication",c:"#0b3d91",min:20,sub:"Schéma de la communication, verbal, non verbal, para-verbal",acts:[
+ {id:"c1",type:"assign",title:"Qui fait quoi ?",cons:"Associez chaque élément de la scène à son rôle dans le schéma de la communication.",
+  ctx:"Au rayon vélo, M. PETIT demande à Chloé, vendeuse : « Ce casque existe en taille L ? ». Au même moment, l'alarme de la porte d'entrée sonne. Chloé répond : « Oui, je vais vous le chercher en réserve. »",
+  opts:["Émetteur","Récepteur","Message","Canal","Bruit","Feedback"],
+  items:[["M. PETIT",0],["Chloé",1],["« Ce casque existe en taille L ? »",2],["La voix, en face à face",3],["L'alarme de la porte",4],["« Oui, je vais vous le chercher en réserve. »",5]],
+  why:"Le bruit, c'est tout ce qui gêne le message (un son, la distance, l'inattention). Le feedback est la réponse du récepteur : il montre que le message a été compris."},
+ {id:"c2",type:"tri",title:"Tri express",cons:"Pour chaque comportement d'un vendeur, choisissez : verbal (les mots), non verbal (le corps) ou para-verbal (la voix).",
+  cats:["Verbal","Non verbal","Para-verbal"],
+  items:[["Croiser les bras",1],["Dire « Je vous en prie »",0],["Parler très vite",2],["Regarder le client dans les yeux",1],["Soupirer",2],["Dire « Bah, c'est pareil »",0],["Hausser le ton",2],["Avoir les mains dans les poches",1],["Utiliser le mot « truc »",0]]},
+ {id:"c3",type:"memory",title:"Memory du vocabulaire",cons:"Retournez les cartes deux par deux pour associer chaque mot à sa définition. Moins vous faites d'erreurs, plus vous gagnez de points.",
+  pairs:[["Émetteur","Celui qui envoie le message"],["Récepteur","Celui qui reçoit le message"],["Canal","Le moyen : oral, téléphone, écrit"],["Bruit","Tout ce qui gêne le message"],["Feedback","La réponse du récepteur"],["Para-verbal","La voix : volume, débit, ton"]]}
+]},
+{l:"T",n:"Rayon Accueil",c:"#c2410c",min:20,sub:"SBAM, posture, tenue, distances, canaux de contact",acts:[
+ {id:"l1",type:"tri",title:"Adapté ou pas ?",cons:"Ce comportement respecte-t-il une charte d'accueil ?",cats:["Adapté","Pas adapté"],
+  items:[["Saluer le client dans les 30 secondes",0],["Finir son message sur son téléphone avant d'aller voir le client",1,"Le client passe toujours avant le téléphone."],["Porter son badge bien visible",0],["Mâcher un chewing-gum à la caisse",1],["Garder le buste droit et les mains visibles",0],["S'appuyer contre une étagère en parlant au client",1,"Posture relâchée : le client se sent peu considéré."],["Dire « Merci, au revoir, bonne journée » au client qui part",0],["Rester derrière le comptoir pour conseiller",1,"On va vers le client pour le conseiller."]]},
+ {id:"l2",type:"slider",title:"Le bon mètre",cons:"Réglez la distance à laquelle vous vous placez dans chaque situation.",
+  items:[["Vous saluez un client qui entre dans le magasin.",1.2,3.6,"Zone sociale (1,20 m à 3,60 m) : pour saluer et aborder."],["Vous aidez un client à régler son casque de vélo.",0.45,1.2,"Zone personnelle (45 cm à 1,20 m) : pour conseiller et faire essayer."],["Vous présentez un nouveau tapis de course à un groupe de 15 personnes.",3.6,5,"Zone publique (plus de 3,60 m) : pour s'adresser à un groupe."],["Vous expliquez à une cliente comment entretenir sa tente.",0.45,1.2,"Zone personnelle : on conseille à distance de bras, sans entrer dans la zone intime (moins de 45 cm)."]]},
+ {id:"l3",type:"tri",title:"Quel canal ?",cons:"Par quel canal le client entre-t-il en contact avec le magasin ? (Le magasin est omnicanal : il répond partout.)",cats:["Face à face","Téléphone","Écrit (courriel, chat, avis)"],
+  items:[["Un client vous demande un conseil au rayon running.",0],["Une cliente appelle pour connaître les horaires de Noël.",1,"Au téléphone, le client ne vous voit pas : seuls la voix et les mots comptent."],["Un client se plaint par courriel d'une commande en retard.",2],["Une cliente laisse un avis sur internet après son passage.",2],["Un client demande sur le chat du site si un article est en stock.",2]]},
+ {id:"l4",type:"trous",title:"La charte d'accueil à compléter",cons:"Complétez la charte d'accueil de Sport Évasion avec les mots proposés. Attention, il y a des intrus.",
+  text:"Le vendeur salue chaque client dans les [[30]] secondes. Il applique la règle [[SBAM]] : sourire, bonjour, au revoir, merci. Il range son [[téléphone]] et va vers le client.\nIl adopte une posture [[ouverte]] : buste droit, mains [[visibles]], regard franc. Sa tenue est soignée et son [[badge]] est visible.\nPour conseiller, il se place dans la zone [[personnelle]], entre 45 cm et [[1,20 m]]. Il n'entre jamais dans la zone [[intime]].\nAu téléphone, le client ne voit pas le vendeur : seuls les mots et la [[voix]] comptent.",
+  extra:["10","fermée","dans les poches","sociale","3,60 m","publique","chewing-gum","posture"]}
+]},
+{l:"C",n:"Rayon Langage",c:"#7c3aed",min:25,sub:"Registre de langue, questions, accueil téléphonique, mots croisés",acts:[
+ {id:"i1",type:"write",title:"Le traducteur pro",cons:"Réécrivez chaque phrase dans un langage professionnel. Ensuite, comparez avec la proposition et cochez honnêtement ce que vous avez réussi.",
+  items:[["« Ouais, vous voulez quoi ? »","« Bonjour Monsieur, que puis-je faire pour vous ? »"],["« J'sais pas, faut demander à quelqu'un d'autre. »","« Je vais me renseigner auprès de mon collègue et je reviens vers vous. »"],["« Bah c'est pareil en gros, c'est juste plus cher. »","« Je vais vous montrer la différence entre les deux modèles. »"],["« Attendez, j'suis occupé là. »","« Je suis à vous dans un instant, Madame. »"]],
+  checks:["Aucun mot familier","Une formule de politesse (Monsieur, Madame, je vous en prie…)","J'aide ou je propose quelque chose au client"]},
+ {id:"i2",type:"tri",title:"Ouverte ou fermée ?",cons:"Une question ouverte laisse le client s'exprimer. Une question fermée appelle une réponse courte (oui, non, un choix). Classez ces questions.",cats:["Ouverte","Fermée"],
+  items:[["« Quelle activité pratiquez-vous ? »",0],["« Vous courez sur route ? »",1],["« Comment utilisez-vous votre vélo ? »",0],["« Vous voulez la taille M ? »",1],["« Qu'attendez-vous de vos nouvelles chaussures ? »",0],["« C'est pour offrir ? »",1]],
+  why:"Pour découvrir le besoin, on commence par des questions ouvertes ; les questions fermées servent ensuite à préciser ou à faire choisir."},
+ {id:"i3",type:"order",title:"Décrocher le téléphone",cons:"Touchez les morceaux dans le bon ordre pour reconstituer l'accueil téléphonique professionnel.",
+  pieces:["« Sport Évasion Alençon, »","« bonjour, »","« Chloé à l'appareil, »","« que puis-je faire pour vous ? »"],why:"On annonce l'enseigne, on salue, on se présente, puis on propose son aide. Souriez : le sourire s'entend au téléphone."},
+ {id:"i4",type:"cross",title:"Mots croisés de la communication",cons:"Complétez la grille sans accents. Touchez une définition pour aller au mot ; touchez deux fois une case pour changer de sens. 1 point par mot juste.",
+  h:13,w:14,words:CWDATA}
+]},
+{l:"I",n:"Rayon Écoute",c:"#0f766e",min:30,sub:"Écoute active, visuel/auditif/kinesthésique, reformulation",acts:[
+ {id:"e1",type:"tri",title:"Détective VAK",cons:"Écoutez les mots du client : est-il plutôt visuel, auditif ou kinesthésique ?",cats:["Visuel","Auditif","Kinesthésique"],
+  items:[["« J'aimerais voir les autres coloris. »",0],["« On m'a dit que ce tapis de course était très bruyant. »",1],["« Je veux une veste douce, qui ne gratte pas. »",2],["« Montrez-moi comment on le replie. »",0],["« Expliquez-moi la différence entre les deux. »",1],["« Je voudrais la prendre en main, sentir si elle est lourde. »",2]]},
+ {id:"e2",type:"tri",title:"Écoute active ou pas ?",cons:"Ce comportement du vendeur montre-t-il qu'il écoute activement le client ?",cats:["Oui","Non"],
+  items:[["Hocher la tête pendant que le client parle",0],["Regarder sa montre",1],["Laisser le client finir sa phrase",0],["Couper la parole pour gagner du temps",1],["Poser une question pour faire préciser",0],["Ranger le rayon en écoutant",1,"On peut entendre en rangeant, mais le client ne se sent pas écouté."]]},
+ {id:"e3",type:"tri",title:"Reformulation ou pas ?",cons:"La réplique du vendeur est-elle une reformulation ? Si oui, de quel type ?",cats:["Écho","Synthèse","Clarification","Pas une reformulation"],
+  items:[["Client : « Je cherche un maillot pour nager en club. » Vendeur : « En club ? »",0],["« Si je résume, vous voulez un maillot résistant au chlore, pour trois entraînements par semaine, à moins de 40 € : c'est bien cela ? »",1],["« Quand vous dites “résistant”, vous pensez au chlore ou à l'usure ? »",2],["Le vendeur dit « Je vais me renseigner » au lieu de « J'sais pas ».",3,"Piège ! C'est adapter son registre de langue, pas reformuler : on ne reprend pas les paroles du client."],["« Bonjour Madame, je vous en prie, suivez-moi. »",3],["« Ce modèle est notre meilleure vente. »",3,"C'est un argument de vente."]]},
+ {id:"e4",type:"write",title:"À vous de reformuler",cons:"Lisez ce que dit le client, rédigez les deux reformulations, puis comparez et cochez.",
+  ctx:"Client : « Bonjour, je cherche un vélo pour aller au travail tous les jours. J'habite à 8 km, il y a des côtes, et je ne veux pas arriver en sueur. Mon budget, c'est 1 200 € maximum. »",
+  items:[["Reformulation écho","« 1 200 € maximum ? » ou « Des côtes ? »",["Je reprends les derniers mots du client","Sur un ton de question"]],["Reformulation synthèse","« Si je comprends bien, vous cherchez un vélo pour vos trajets quotidiens de 8 km avec des côtes, pour arriver au travail sans transpirer, et votre budget est de 1 200 € maximum : c'est bien cela ? »",["Je reprends au moins 3 attentes du client","Je termine par une question pour qu'il valide","Je ne propose pas encore de produit","J'utilise mes propres mots"]]]},
+ {id:"e5",type:"memory",title:"Memory : qu'est-ce que c'est ?",cons:"Associez chaque phrase de vendeur ou de client à ce qu'elle illustre.",
+  pairs:[["Écho","« Légères ? »"],["Synthèse","« Si je comprends bien… c'est bien cela ? »"],["Clarification","« Quand vous dites “pas cher”, c'est combien ? »"],["Registre de langue","« Je vais me renseigner » au lieu de « J'sais pas »"],["Question ouverte","« Comment utilisez-vous votre vélo ? »"],["Kinesthésique","« Je veux que ce soit confortable. »"]]},
+ {id:"e6",type:"trous",title:"Écouter et reformuler : le texte à trous",cons:"Complétez ce résumé de cours avec les mots proposés. Attention aux intrus.",
+  text:"L'écoute active, c'est écouter le client avec toute son [[attention]] et lui [[montrer]] qu'on l'écoute : on le [[regarde]], on hoche la tête, on le laisse [[finir]] ses phrases et on pose des [[questions]].\nReformuler, c'est redire avec ses propres [[mots]] ce que le client vient de dire, pour [[vérifier]] qu'on a bien compris. On reformule [[avant]] de proposer un produit.\nRemplacer « ouais » par « oui », ce n'est pas reformuler : c'est adapter son [[registre]] de langue.",
+  extra:["après","corriger","son téléphone","parler","plus vite","argument"]}
+]},
+{l:"L",n:"Rayon Réclamation",c:"#be123c",min:25,sub:"Les 5 étapes, les erreurs à éviter, le courriel de réponse",acts:[
+ {id:"n1",type:"order",title:"Les 5 étapes",cons:"Remettez les étapes du traitement d'une réclamation dans l'ordre.",pieces:["Accueillir et écouter","S'excuser","Reformuler","Proposer une solution","Conclure et suivre"],why:"On ne propose jamais de solution avant d'avoir écouté, présenté ses excuses et vérifié qu'on a bien compris le problème."},
+ {id:"n2",type:"spot",title:"Appel raté",cons:"Voici l'appel reçu par Théo, vendeur. Touchez les répliques de Théo qui contiennent une erreur, puis vérifiez.",
+  lines:[["V","Théo","Ouais, allô ?",1,"Étape 1 : il ne présente ni l'enseigne ni lui-même."],["C","M. ROUX","Bonjour, j'ai acheté une montre GPS chez vous il y a dix jours, et elle ne se recharge plus.",0],["V","Théo","Ah ça, c'est pas nous, faut voir avec la marque.",1,"Étape 2 : il rejette la faute sur la marque et ne s'excuse pas."],["C","M. ROUX","Mais je l'ai achetée chez vous !",0],["V","Théo","Vous avez gardé votre ticket de caisse ?",0,"Bonne question : elle permet de vérifier l'achat."],["C","M. ROUX","Oui, je l'ai.",0],["V","Théo","Vous l'avez sûrement mal chargée.",1,"Il accuse le client au lieu de reformuler le problème (étape 3)."],["V","Théo","Bon, rappelez demain, mon chef sera là.",1,"Étapes 4 et 5 : aucune solution, aucun suivi, il renvoie le client."]]},
+ {id:"n3",type:"qcm",title:"La bonne solution",cons:"Lisez la règle du magasin et l'état du stock, puis choisissez la solution.",
+  ctx:"Règle Sport Évasion : produit défectueux signalé dans les 30 jours → échange immédiat s'il est en stock ; sinon commande prioritaire ou remboursement. M. ROUX court un semi-marathon dimanche.",
+  table:[["Article","Stock magasin","Stock entrepôt"],["Montre GPS Run 300","2","15"]],
+  q:"Que proposez-vous à M. ROUX ?",o:["Un échange immédiat : il peut passer au magasin dès aujourd'hui avec sa montre et son ticket","Un envoi au service après-vente de la marque (3 semaines)","De rappeler demain quand le responsable sera là","Un bon d'achat valable un an"],a:0,
+  e:"La montre est en stock au magasin : la règle prévoit l'échange immédiat, et M. ROUX l'aura avant dimanche."},
+ {id:"n5",type:"trous",title:"Un courriel modèle à compléter",cons:"Avant de rédiger le vôtre, complétez ce courriel de réponse à une autre cliente, Mme ROSSI, dont le tapis de yoga est arrivé déchiré. Attention aux intrus.",
+  text:"Objet : Votre [[réclamation]] — Commande n° SE-2026-2210\n[[Madame]],\nNous vous [[remercions]] pour votre message du 24 novembre et vous présentons toutes nos [[excuses]] pour ce désagrément.\nVous nous [[indiquez]] que votre tapis de yoga est arrivé déchiré.\nNous vous [[proposons]] un échange immédiat à l'accueil du magasin, ou un [[remboursement]] sous 5 jours.\nNous vous prions d'agréer, Madame, l'expression de nos [[salutations distinguées]].\nChloé MARTIN — [[Service client]] — Sport Évasion Alençon",
+  extra:["Salut","bisous","ce n'est pas de notre faute","Cordialement à toi","félicitations","engueulons"]},
+ {id:"n4",type:"write",title:"Le courriel de réponse",cons:"Le lendemain, M. ROUX écrit au service client pour se plaindre de sa montre et de l'accueil de Théo au téléphone. Rédigez la réponse (objet + message). Ensuite, comparez et cochez la grille : c'est la grille de l'évaluation.",
+  items:[["Votre courriel à M. ROUX","Objet : Votre réclamation — Montre GPS Run 300\n\nMonsieur,\n\nNous vous remercions pour votre message et vous présentons toutes nos excuses pour le problème de votre montre et pour l'accueil que vous avez reçu au téléphone.\n\nVous nous indiquez que votre montre GPS Run 300, achetée il y a dix jours, ne se recharge plus, et que vous courez un semi-marathon dimanche.\n\nNous vous proposons un échange immédiat : il vous suffit de passer à l'accueil du magasin, avec votre montre et votre ticket de caisse, du lundi au samedi de 9 h 30 à 19 h 30. Une montre neuve vous y attend.\n\nNous vous souhaitons une belle course et vous prions d'agréer, Monsieur, l'expression de nos salutations distinguées.\n\nChloé MARTIN\nService client — Sport Évasion Alençon",
+   ["Un objet clair","Une formule d'appel et un remerciement","Des excuses, sans rejeter la faute","La reformulation du problème","Une solution précise et réalisable avant dimanche","Une formule de politesse finale et une signature complète","Un langage professionnel, des phrases claires"],"long"]]}
+]},
+{l:"E",n:"Le client mystère",c:"#1f2937",min:10,sub:"10 questions chronométrées sur tout le programme",acts:[
+ {id:"t1",type:"boss",title:"Le client mystère",cons:"Un client mystère vous teste ! 30 secondes par question. 1 point par bonne réponse, +1 bonus si vous répondez en moins de 15 secondes.",
+  qs:[["Dans le schéma de la communication, le « bruit », c'est…",["Tout ce qui gêne le message","Le volume de la voix","La réponse du client","Le canal utilisé"]],
+   ["Au téléphone, le client ne perçoit pas…",["Le non verbal","Le verbal","Le para-verbal","Le registre de langue"]],
+   ["Pour conseiller un client, on se place…",["Entre 45 cm et 1,20 m","À moins de 45 cm","Entre 1,20 m et 3,60 m","À plus de 3,60 m"]],
+   ["SBAM signifie…",["Sourire, Bonjour, Au revoir, Merci","Saluer, Bouger, Aider, Montrer","Sourire, Badge, Accueil, Message","Service, Bonjour, Aide, Merci"]],
+   ["« Vous préférez la taille M ou la taille L ? » est une question…",["Fermée","Ouverte","De reformulation","De clarification"]],
+   ["Un client dit : « Je veux que ce soit confortable. » Il est plutôt…",["Kinesthésique","Visuel","Auditif","Impossible à savoir"]],
+   ["« Si je comprends bien, … c'est bien cela ? » est une reformulation…",["Synthèse","Écho","Clarification","Ce n'est pas une reformulation"]],
+   ["Remplacer « ouais » par « oui », c'est…",["Adapter son registre de langue","Faire une reformulation","Faire de l'écoute active","Donner un feedback"]],
+   ["Face à une réclamation, on ne doit jamais…",["Rejeter la faute sur la marque ou un collègue","S'excuser au nom du magasin","Reformuler le problème","Proposer une solution datée"]],
+   ["Le feedback, c'est…",["La réponse du récepteur","Le message de l'émetteur","Un bruit","Un canal écrit"]]]}
+]}
+];
+const MEMO=[["Schéma de la communication","Émetteur → message → canal → récepteur. Le bruit gêne le message ; le feedback est la réponse du récepteur."],["Verbal / non verbal / para-verbal","Les mots / le corps (posture, regard, gestes, distance) / la voix (volume, débit, ton). Les trois doivent dire la même chose."],["Accueil (SBAM)","Sourire, Bonjour, Au revoir, Merci ; saluer dans les 30 secondes ; posture ouverte, tenue soignée, badge visible."],["Distances (proxémie)","Intime : moins de 45 cm, jamais. Personnelle : 45 cm à 1,20 m, conseiller. Sociale : 1,20 m à 3,60 m, saluer. Publique : plus de 3,60 m, groupe."],["Omnicanal","Le client contacte le magasin en face à face, par téléphone ou par écrit (courriel, chat, avis) : on adapte sa communication au canal."],["Registre de langue","Familier (interdit face au client), courant, soutenu. Adapter son registre n'est pas reformuler."],["Questions","Ouvertes pour découvrir le besoin ; fermées pour préciser ou faire choisir."],["Visuel / auditif / kinesthésique","Montrer / expliquer / faire toucher et essayer, selon les mots du client."],["Écoute active","Écouter avec attention ET le montrer : regard, signes de tête, laisser finir, questions, reformulation."],["Reformulation","Redire avec ses mots ce que dit le client pour vérifier qu'on a compris. Écho, synthèse, clarification."],["Réclamation","1. Accueillir et écouter 2. S'excuser 3. Reformuler 4. Proposer une solution 5. Conclure et suivre."]];
+const KEY="defiVendeur2MRC_v2";
+const hc=t=>{let x=5381;for(const c of String(t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/\s+/g,""))x=(Math.imul(x,33)^c.charCodeAt(0))>>>0;return x.toString(36)};
+const CODE_SEANCE="p9uy98",CODE_PROF="1ge4xt7";
+try{localStorage.removeItem("defiVendeur2MRC_v1")}catch(e){}
+const fresh=()=>({scr:"home",noms:"",t0:null,acc:{b:[],w:"",a:[]},lv:-1,ai:0,act:{},done:[],tries:{},code:false,codeTry:"",all:false});
+let S=fresh();
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(fresh(),JSON.parse(r))}catch(e){}
+S.ok=false;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(Object.assign({},S,{ok:false})))}catch(e){}};
+const app=document.getElementById("app"),meta=document.getElementById("meta");
+const A=id=>S.act[id]||(S.act[id]={sel:{},done:false,sc:0,max:0,ph:0,txt:{},chk:{}});
+const actMax=a=>a.type==="memory"?a.pairs.length:a.type==="trous"?(a.text.match(/\[\[/g)||[]).length:a.type==="cross"?a.words.length:a.type==="assign"||a.type==="tri"?a.items.length:a.type==="slider"?a.items.length*2:a.type==="order"?a.pieces.length:a.type==="spot"?a.lines.filter(l=>l[3]).length:a.type==="qcm"?2:a.type==="boss"?a.qs.length*2:a.items.reduce((s,it)=>s+(it.length>3||Array.isArray(it[2])?it[2].length:a.checks.length),0);
+const lvScore=i=>LV[i].acts.reduce((s,a)=>s+(S.act[a.id]?.sc||0),0);
+const lvMax=i=>LV[i].acts.reduce((s,a)=>s+actMax(a),0);
+const total=()=>LV.reduce((s,_,i)=>s+lvScore(i),0),totMax=LV.reduce((s,_,i)=>s+lvMax(i),0);
+const open=i=>S.all||i===0||S.done.includes(i-1);
+const SEUIL=.6;
+const lvTried=i=>LV[i].acts.every(a=>S.act[a.id]?.done);
+const lvOk=i=>{const a=LV[i].acts[0];if(a.type==="boss"){const r=S.act[a.id]?.sel?.res||[];return r.filter(x=>x.ok).length>=6}return lvScore(i)>=Math.ceil(lvMax(i)*SEUIL)};
+const need=i=>LV[i].acts[0].type==="boss"?"6 bonnes réponses sur 10":Math.ceil(lvMax(i)*SEUIL)+" points sur "+lvMax(i);
+function resetLv(i){LV[i].acts.forEach(a=>{const o=S.act[a.id];S.act[a.id]={sel:{},done:false,sc:0,max:0,ph:0,txt:o?o.txt||{}:{},chk:{}}});S.tries[i]=(S.tries[i]||1)+1}
+function drawMeta(){const m=S.t0?Math.floor((Date.now()-S.t0)/60000):0;meta.innerHTML=`<span>Points <b>${total()}</b></span><span>Temps <b>${Math.floor(m/60)} h ${String(m%60).padStart(2,"0")}</b></span>`}
+setInterval(drawMeta,20000);
+function codeBar(){return `<div class="code" aria-label="Lettres gagnées">${LV.map((_,i)=>{const d=S.done[i];return `<span class="${d!==undefined?"got":""}">${d!==undefined?LV[d].l:"?"}</span>`}).join("")}</div>`}
+let BT=null;
+function render(){
+ drawMeta();if(BT&&!(S.scr==="lvl"&&LV[S.lv].acts[S.ai].type==="boss")){clearInterval(BT);BT=null}
+ if(S.scr==="home")return home();
+ if(S.scr==="acc")return accroche();
+ if(S.scr==="lvl")return level();
+ if(S.scr==="final")return finale();
+}
+function home(){
+ if(!S.ok){app.innerHTML=`<div class="intro"><div><h2>Magasin fermé</h2><p>Le Défi du vendeur s'ouvre en classe. Votre professeure vous donnera le code d'ouverture au début du cours.</p></div></div>
+ <div class="card"><div class="tag"><b>Code d'ouverture</b><span>donné en classe</span></div><div class="pad"><label class="cons" for="code0">Saisissez le code</label><input type="text" id="code0" autocomplete="off" style="max-width:260px;text-transform:uppercase;font-size:20px;letter-spacing:.15em"><p class="why" id="code0m"></p><div class="act"><button class="btn" id="unlock">Ouvrir le magasin</button></div></div></div>`;return}
+ if(!S.noms){app.innerHTML=`<div class="intro"><div><h2>Bienvenue dans l'équipe Sport Évasion</h2><p>Escape game de révision : validez les 6 rayons du magasin. Chacun vous donne une lettre, mais dans le désordre : retrouvez le mot de passe pour obtenir votre certificat de vendeur.</p></div></div>${codeBar()}
+ <div class="card"><div class="tag"><b>Votre équipe</b><span>binôme conseillé</span></div><div class="pad">
+ <p>Durée totale : environ 2 h 30 (10 min d'accroche, 6 rayons, 10 min de bilan). Chaque rayon indique un temps conseillé. Lisez toujours les corrections : c'est là que vous révisez.</p>
+ <label class="cons" for="noms">Prénoms et noms des membres de l'équipe</label><input type="text" id="noms" placeholder="Prénom Nom, Prénom Nom">
+ <div class="act"><button class="btn" id="go">Entrer dans le magasin</button></div></div></div>`;return}
+ const allDone=S.done.length===LV.length;
+ app.innerHTML=`<div class="intro"><div><h2>Plan du magasin</h2><p>Équipe : ${esc(S.noms)}. Un rayon s'ouvre quand le précédent est validé.</p></div><div class="act" style="margin:0">${allDone?`<button class="btn" id="tofinal">Ouvrir le coffre</button>`:""}<button class="btn sec" id="newg">Nouvelle partie</button></div></div>${codeBar()}
+ <div class="map">${LV.map((v,i)=>{const d=S.done.includes(i),o=open(i);return `<button class="rayon" style="background:${v.c}" data-lv="${i}" ${o?"":"disabled"}><span class="lt">${d?v.l:"?"}</span><span><h3>${esc(v.n)}</h3><small>${esc(v.sub)}</small></span><span class="st">${d?`Validé — ${lvScore(i)} / ${lvMax(i)} pts`:o&&lvTried(i)?`À refaire — ${lvScore(i)} / ${lvMax(i)} pts`:o?`≈ ${v.min} min — ${v.acts.length} épreuve${v.acts.length>1?"s":""}`:"Fermé"}</span></button>`}).join("")}</div>`;
+}
+function accroche(){
+ const b=S.acc.b;
+ app.innerHTML=`<div class="card"><div class="tag"><b>Avant d'entrer : votre avis en binôme</b><span>≈ 10 min</span></div><div class="pad">
+ <p>Il n'y a pas de bonne ou de mauvaise réponse ici. Discutez à deux et mettez-vous d'accord sur une réponse commune pour chaque phrase. Vous retrouverez ces phrases à la fin du jeu.</p>
+ ${ACC.map((t,i)=>`<div class="item"><b>${esc(t)}</b><div class="cats">${ACCO.map((o,j)=>`<button class="cat ${b[i]===j?"on":""}" data-acc="${i}" data-v="${j}">${o}</button>`).join("")}</div></div>`).join("")}
+ <label class="cons" for="accw">Choisissez une phrase et expliquez votre avis commun en une ou deux lignes :</label><textarea id="accw">${esc(S.acc.w)}</textarea>
+ <div class="act"><button class="btn" id="accok" ${b.filter(x=>x!==undefined&&x!==null).length<3?"disabled":""}>Valider et voir le plan du magasin</button></div></div></div>`;
+}
+function level(){
+ const v=LV[S.lv],a=v.acts[S.ai],st=A(a.id);st.max=actMax(a);
+ let body="";
+ if(a.ctx)body+=`<p>${esc(a.ctx)}</p>`;
+ if(a.type==="assign")body+=a.items.map(([t,ans],k)=>{const s=st.sel[k],c=st.done?(+s===ans?"good":"bad"):"";return `<div class="item ${c}"><div class="row2"><span>${esc(t)}</span><select data-k="${k}" ${st.done?"disabled":""} aria-label="Rôle de ${esc(t)}"><option value="">Choisir…</option>${a.opts.map((o,j)=>`<option value="${j}" ${+s===j&&s!==undefined&&s!==""?"selected":""}>${o}</option>`).join("")}</select></div>${st.done&&+s!==ans?`<div class="why">Réponse : ${a.opts[ans]}</div>`:""}</div>`}).join("");
+ if(a.type==="tri")body+=a.items.map(([t,ans,why],k)=>{const s=st.sel[k],c=st.done?(s===ans?"good":"bad"):"";return `<div class="item ${c}"><div>${esc(t)}</div><div class="cats">${a.cats.map((o,j)=>`<button class="cat ${s===j?"on":""} ${st.done&&j===ans&&s!==ans?"ans":""}" data-k="${k}" data-v="${j}" ${st.done?"disabled":""}>${o}</button>`).join("")}</div>${st.done&&(why||s!==ans)?`<div class="why">${s!==ans?"Réponse : "+a.cats[ans]+". ":""}${esc(why||"")}</div>`:""}</div>`}).join("");
+ if(a.type==="slider")body+=a.items.map(([t,mn,mx,why],k)=>{const s=st.sel[k]??2.5,ok=s>=mn&&s<=mx,c=st.done?(ok?"good":"bad"):"";return `<div class="item ${c}"><div>${esc(t)}</div><div class="row2"><input type="range" min="0.2" max="5" step="0.05" value="${s}" data-k="${k}" ${st.done?"disabled":""} aria-label="Distance"><span class="val" id="v${k}">${Number(s).toFixed(2).replace(".",",")} m</span></div><div class="meter"><span>0,2 m</span><span>5 m</span></div>${st.done?`<div class="why">${esc(why)}</div>`:""}</div>`}).join("");
+ if(a.type==="order"){const seq=st.sel.seq||[],ord=st.sel.ord||(st.sel.ord=shuf(a.pieces.map((_,j)=>j)));
+  body+=`<div class="seq" aria-label="Votre ordre">${seq.map((j,p)=>`<span class="${st.done?(j===p?"good":"bad"):""}">${p+1}. ${esc(a.pieces[j])}</span>`).join("")||'<span style="background:none;color:var(--mute)">Touchez les morceaux ci-dessous…</span>'}</div>
+  ${st.done?"":`<div class="pieces">${ord.map(j=>`<button class="piece" data-pc="${j}" ${seq.includes(j)?"disabled":""}>${esc(a.pieces[j])}</button>`).join("")}</div><div class="act" style="justify-content:flex-start;margin:0"><button class="btn sec" id="clr">Effacer</button></div>`}
+  ${st.done?`<div class="item good"><b>Bon ordre :</b> ${a.pieces.map((p,i)=>(i+1)+". "+esc(p)).join(" ")}<div class="why">${esc(a.why)}</div></div>`:""}`}
+ if(a.type==="spot")body+=a.lines.map(([w,n,t,err,why],k)=>{const on=!!st.sel[k],c=st.done&&w==="V"?(err?(on?"good":"bad"):(on?"bad":"")):"";return w==="V"?`<button class="line ${on&&!st.done?"on":""} ${c}" data-k="${k}" ${st.done?"disabled":""}><span class="who v">V</span><span><small style="color:var(--mute);font-weight:600">${esc(n)}</small><br>« ${esc(t)} »${st.done&&why?`<br><span class="why" style="font-size:15px">${err?"Erreur : ":""}${esc(why)}</span>`:""}</span></button>`:`<div class="say"><div class="who">C</div><div class="bub"><small>${esc(n)}</small>« ${esc(t)} »</div></div>`}).join("");
+ if(a.type==="qcm"){const ord=st.sel.ord||(st.sel.ord=shuf(a.o.map((_,j)=>j))),p=st.sel.p;
+  if(a.table)body+=`<div class="scroll"><table class="st"><tr>${a.table[0].map(h=>`<th>${h}</th>`).join("")}</tr>${a.table.slice(1).map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join("")}</tr>`).join("")}</table></div>`;
+  body+=`<p class="cons">${esc(a.q)}</p>`+ord.map((j,i)=>`<button class="opt ${st.done?(j===a.a?"good":j===p?"bad":""):(p===j?"on":"")}" data-o="${j}" ${st.done?"disabled":""}><span class="k">${"ABCD"[i]}</span><span>${esc(a.o[j])}</span></button>`).join("")+(st.done?`<div class="why">${esc(a.e)}</div>`:"")}
+ if(a.type==="write")body+=a.items.map((it,k)=>{const [lab,model,own,sz]=it,checks=Array.isArray(own)?own:a.checks;return `<div class="item"><label class="cons" for="w${k}">${esc(lab)}</label><textarea id="w${k}" data-k="${k}" class="${sz==="long"?"long":""}" ${st.ph>0?"readonly":""}>${esc(st.txt[k]||"")}</textarea>
+  ${st.ph>0?`<div class="model"><b>Proposition :</b>\n${esc(model)}</div>${checks.map((c,j)=>`<label class="chk"><input type="checkbox" data-ck="${k}-${j}" ${st.chk[k+"-"+j]?"checked":""} ${st.done?"disabled":""}><span>${esc(c)}</span></label>`).join("")}`:""}</div>`}).join("");
+ if(a.type==="memory")body+=memoryR(a,st);
+ if(a.type==="trous")body+=trousR(a,st);
+ if(a.type==="cross")body+=crossR(a,st);
+ if(a.type==="boss")body+=boss(a,st);
+ let foot="";
+ if(a.type!=="boss"){
+  if(!st.done){
+   if(a.type==="write")foot=st.ph===0?`<button class="btn" id="reveal">Voir la proposition</button>`:`<button class="btn" id="check">Valider mon auto-évaluation</button>`;
+   else if(a.type==="memory")foot=(st.sel.found||[]).length===a.pairs.length?`<button class="btn" id="check">Valider le memory</button>`:"";
+   else foot=`<button class="btn" id="check">Vérifier</button>`;
+  }else{
+   const pc=st.sc/st.max;foot=`<button class="btn" id="next">${S.ai<v.acts.length-1?"Épreuve suivante":"Valider le rayon"}</button>`;
+   body+=`<div class="fb ${pc<.6?"mid":""}"><b>${st.sc} / ${st.max} points</b> — ${pc>=.85?"Excellent !":pc>=.6?"Bien joué, relisez les corrections.":"Relisez bien les corrections en couleur avant de continuer."}</div>`;
+  }
+ }
+ app.innerHTML=`<div class="intro"><div><h2>${esc(v.n)}</h2><p>Épreuve ${S.ai+1} / ${v.acts.length} — temps conseillé : ${v.min} min — lettre gagnée à partir de ${need(S.lv)}${(S.tries[S.lv]||1)>1?" — essai n° "+S.tries[S.lv]:""}</p></div><button class="btn sec" id="map">Plan du magasin</button></div>
+ <div class="steps">${v.acts.map((x,i)=>`<i class="${A(x.id).done?"d":i===S.ai?"c":""}"></i>`).join("")}</div>
+ <div class="card"><div class="tag" style="background:${v.c}"><b>${esc(a.title)}</b><span>${S.done.includes(S.lv)?"Lettre "+v.l:"Une lettre à gagner"}</span></div><div class="pad"><p class="cons">${esc(a.cons)}</p>${body}<div class="act">${foot}</div></div></div>`;
+}
+function boss(a,st){
+ const b=st.sel;if(b.i===undefined){b.i=-1;b.res=[]}
+ if(b.i===-1)return `<div class="act" style="justify-content:flex-start"><button class="btn" id="bstart">Lancer le chrono</button></div>`;
+ if(b.i>=a.qs.length){st.done=true;st.sc=b.res.reduce((s,r)=>s+(r.ok?1+(r.t<15?1:0):0),0);
+  return `<div class="fb"><b>${st.sc} / ${a.qs.length*2} points</b> — ${b.res.filter(r=>r.ok).length} bonnes réponses sur ${a.qs.length}.</div>${a.qs.map((q,k)=>b.res[k].ok?"":`<div class="item bad"><b>${esc(q[0])}</b><div class="why">Réponse : ${esc(q[1][0])}</div></div>`).join("")}<div class="act"><button class="btn" id="next">Valider le rayon</button></div>`}
+ const q=a.qs[b.i];b.ord=b.ord||{};const ord=b.ord[b.i]||(b.ord[b.i]=shuf([0,1,2,3]));
+ const left=Math.max(0,30-Math.floor((Date.now()-b.ts)/1000));
+ return `<p><b>Question ${b.i+1} / ${a.qs.length}</b> — <span id="left">${left}</span> s</p><div class="timer"><i id="tbar" style="width:${left/30*100}%"></i></div><p class="cons">${esc(q[0])}</p>${ord.map((j,i)=>`<button class="opt" data-bo="${j}"><span class="k">${"ABCD"[i]}</span><span>${esc(q[1][j])}</span></button>`).join("")}`;
+}
+function bossAnswer(j){const a=LV[S.lv].acts[S.ai],b=A(a.id).sel;const t=(Date.now()-b.ts)/1000;b.res[b.i]={ok:j===0,t};b.i++;b.ts=Date.now();save();render();if(b.i<a.qs.length)tick()}
+function tick(){clearInterval(BT);BT=setInterval(()=>{const a=LV[S.lv]?.acts[S.ai];if(!a||a.type!=="boss"||S.scr!=="lvl"){clearInterval(BT);return}const b=A(a.id).sel;if(b.i<0||b.i>=a.qs.length){clearInterval(BT);return}const left=Math.max(0,30-Math.floor((Date.now()-b.ts)/1000));const L=document.getElementById("left"),B=document.getElementById("tbar");if(L)L.textContent=left;if(B)B.style.width=(left/30*100)+"%";if(left<=0)bossAnswer(-1)},250)}
+function gaps(a){return [...a.text.matchAll(/\[\[(.+?)\]\]/g)].map(m=>m[1])}
+function trousR(a,st){const g=gaps(a);if(!st.sel.bank)st.sel.bank=shuf([...new Set(g.concat(a.extra))]);const bank=st.sel.bank;let k=-1;
+ const html=esc(a.text).replace(/\[\[(.+?)\]\]/g,()=>{k++;const v=st.sel[k],ok=st.done?(bank[v]===g[k]?"good":"bad"):"";return `<select data-k="${k}" class="${ok}" ${st.done?"disabled":""} aria-label="Trou ${k+1}"><option value="">……</option>${bank.map((w,j)=>`<option value="${j}" ${v===j?"selected":""}>${esc(w)}</option>`).join("")}</select>${st.done&&bank[v]!==g[k]?` <span class="cor">(${esc(g[k])})</span>`:""}`}).replace(/\n/g,"<br>");
+ return `<div class="bank" aria-label="Mots proposés">${bank.map(w=>`<span>${esc(w)}</span>`).join("")}</div><div class="trous">${html}</div>`}
+function memoryR(a,st){const n=a.pairs.length;if(!st.sel.deck){st.sel.deck=shuf([...Array(n*2).keys()]);st.sel.found=[];st.sel.open=[];st.sel.miss=0}
+ const sl=st.sel;return `<p>Paires trouvées : <b>${sl.found.length} / ${n}</b> — erreurs : <b>${sl.miss}</b></p><div class="memo-g">${sl.deck.map((c,pos)=>{const pr=c>>1,side=c&1,f=sl.found.includes(pr),o=sl.open.includes(pos);const txt=a.pairs[pr][side];return `<button class="mc ${f?"found":o?"up":"back"} ${side===0&&(f||o)?"t":""}" data-mc="${pos}" ${f||st.done?"disabled":""} aria-label="${f||o?esc(txt):"Carte retournée"}">${f||o?esc(txt):"?"}</button>`}).join("")}</div>`}
+let memLock=false;
+function memClick(pos){const a=LV[S.lv].acts[S.ai],st=A(a.id),sl=st.sel;if(memLock||st.done)return;const c=sl.deck[pos];if(sl.found.includes(c>>1)||sl.open.includes(pos))return;sl.open.push(pos);
+ if(sl.open.length===2){const [p1,p2]=sl.open,c1=sl.deck[p1],c2=sl.deck[p2];if((c1>>1)===(c2>>1)){sl.found.push(c1>>1);sl.open=[];save();render()}else{sl.miss++;save();render();memLock=true;setTimeout(()=>{sl.open=[];memLock=false;save();render()},1300)}}else{save();render()}}
+const norm=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().trim();
+const cells=w=>[...w[0]].map((_,i)=>w[4]==="a"?[w[2],w[3]+i]:[w[2]+i,w[3]]);
+let cwDir="a",cwWord=-1;
+function crossR(a,st){const g=st.sel.g||(st.sel.g={});const map={};a.words.forEach((w,wi)=>cells(w).forEach(([rr,cc],i)=>{const k=rr+","+cc;(map[k]=map[k]||{ch:w[0][i],w:[]}).w.push(wi)}));
+ const starts=a.words.map(w=>w[2]+","+w[3]);const ord=[...new Set(starts)].sort((x,y)=>{const[a1,b1]=x.split(",").map(Number),[a2,b2]=y.split(",").map(Number);return a1-a2||b1-b2});const num=k=>ord.indexOf(k)+1;
+ const ok=wi=>cells(a.words[wi]).every(([rr,cc],i)=>norm(g[rr+","+cc])===a.words[wi][0][i]);
+ let cellsH="";for(let rr=0;rr<a.h;rr++)for(let cc=0;cc<a.w;cc++){const k=rr+","+cc,m=map[k];if(!m){cellsH+=`<div class="x"></div>`;continue}const n=starts.includes(k)?num(k):0;const cl=st.done?(norm(g[k])===m.ch?"good":"bad"):"";cellsH+=`<div>${n?`<b>${n}</b>`:""}<input maxlength="1" data-cw="${k}" value="${st.done&&norm(g[k])!==m.ch?m.ch:esc(g[k]||"")}" class="${cl}" ${st.done?"readonly":""} autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Case ligne ${rr+1} colonne ${cc+1}"></div>`}
+ const list=d=>a.words.map((w,wi)=>[w,wi]).filter(([w])=>w[4]===d).sort((x,y)=>num(x[0][2]+","+x[0][3])-num(y[0][2]+","+y[0][3])).map(([w,wi])=>`<p data-cwl="${wi}" class="${st.done?(ok(wi)?"ok":"ko"):""}"><b>${num(w[2]+","+w[3])}.</b> ${esc(w[1])} (${w[0].length})${st.done&&!ok(wi)?` — <b>${w[0]}</b>`:""}</p>`).join("");
+ return `<div class="cwrap"><div class="cw" style="grid-template-columns:repeat(${a.w},auto)">${cellsH}</div></div><div class="clues"><div><h4>Horizontal</h4>${list("a")}</div><div><h4>Vertical</h4>${list("d")}</div></div>`}
+function cwMove(k,step){const a=LV[S.lv].acts[S.ai];const [rr,cc]=k.split(",").map(Number);const nk=cwDir==="a"?rr+","+(cc+step):(rr+step)+","+cc;const el=app.querySelector(`[data-cw="${nk}"]`);if(el){el.focus();el.select()}}
+function check(){
+ const a=LV[S.lv].acts[S.ai],st=A(a.id);let sc=0;
+ if(a.type==="assign")a.items.forEach(([_,ans],k)=>{if(st.sel[k]!==undefined&&st.sel[k]!==""&&+st.sel[k]===ans)sc++});
+ if(a.type==="tri")a.items.forEach(([_,ans],k)=>{if(st.sel[k]===ans)sc++});
+ if(a.type==="slider")a.items.forEach(([_,mn,mx],k)=>{const s=st.sel[k]??2.5;if(s>=mn&&s<=mx)sc+=2});
+ if(a.type==="order"){const seq=st.sel.seq||[];seq.forEach((j,p)=>{if(j===p)sc++})}
+ if(a.type==="spot"){let g=0,w=0;a.lines.forEach((l,k)=>{if(st.sel[k]){l[3]?g++:w++}});sc=Math.max(0,g-w)}
+ if(a.type==="qcm"){if(st.sel.p===undefined)return;sc=st.sel.p===a.a?2:0}
+ if(a.type==="write")sc=Object.values(st.chk).filter(Boolean).length;
+ if(a.type==="memory"){const n=a.pairs.length;sc=Math.max(Math.ceil(n/2),n-Math.floor(Math.max(0,(st.sel.miss||0)-n)/2))}
+ if(a.type==="trous"){const g=gaps(a);sc=g.filter((ans,k)=>st.sel.bank&&st.sel.bank[st.sel[k]]===ans).length}
+ if(a.type==="cross"){sc=a.words.filter(w=>cells(w).every(([rr,cc],i)=>norm((st.sel.g||{})[rr+","+cc])===w[0][i])).length}
+ st.sc=sc;st.done=true;save();render();
+}
+function finale(){
+ const t=total(),pc=t/totMax,grade=pc>=.85?"Vendeur expert":pc>=.65?"Vendeur confirmé":pc>=.45?"Vendeur en progression":"Vendeur stagiaire";
+ if(!S.code){app.innerHTML=`<div class="intro"><div><h2>Le coffre du magasin</h2><p>Vous avez les 6 lettres, mais elles sont mélangées. Remettez-les dans le bon ordre pour former le mot de passe.</p></div><button class="btn sec" id="map">Plan du magasin</button></div>${codeBar()}
+ <div class="card"><div class="pad"><label class="cons" for="cd">Mot de passe</label><input type="text" id="cd" autocomplete="off" value="${esc(S.codeTry)}" style="max-width:260px;text-transform:uppercase;font-size:22px;letter-spacing:.2em"><p id="cdm" class="why"></p><div class="act"><button class="btn" id="cdok">Ouvrir</button></div></div></div>`;return}
+ const a=S.acc.a;
+ app.innerHTML=`<div class="cert"><p class="disp" style="font-size:22px;margin:0">Certificat Sport Évasion décerné à</p><p class="disp" style="font-size:clamp(26px,5vw,36px);margin:6px 0 10px">${esc(S.noms)}</p><div class="big">${t} <span style="font-size:.45em;color:var(--mute)">/ ${totMax} pts</span></div><p class="disp" style="font-size:28px;color:var(--orange);margin:8px 0 0">${grade}</p></div>
+ <div class="card" style="margin-top:14px"><div class="tag"><b>Avez-vous changé d'avis ?</b><span>retour sur l'accroche</span></div><div class="pad">
+ ${ACC.map((txt,i)=>`<div class="item"><b>${esc(txt)}</b><div class="why">Au début : ${S.acc.b[i]!=null?ACCO[S.acc.b[i]]:"—"}</div><div class="cats">${ACCO.map((o,j)=>`<button class="cat ${a[i]===j?"on":""}" data-acc2="${i}" data-v="${j}">${o}</button>`).join("")}</div></div>`).join("")}
+ <p class="why">Ce qu'il faut retenir : un bon vendeur écoute plus qu'il ne parle ; le client croit surtout le corps et la voix ; reformuler, c'est vérifier qu'on a compris le client, pas changer de registre.</p></div></div>
+ <div class="card"><div class="tag"><b>Fiche mémo — le vocabulaire officiel</b><span>à retenir pour l'évaluation</span></div><div class="pad"><div class="scroll"><table class="st memo">${MEMO.map(([n,d])=>`<tr><td>${n}</td><td>${d}</td></tr>`).join("")}</table></div></div></div>
+ <div class="card"><div class="tag"><b>Détail par rayon</b><span>${new Date().toLocaleDateString("fr-FR")}</span></div><div class="pad"><table class="st">${LV.map((v,i)=>`<tr><td>${v.l} — ${esc(v.n)}</td><td style="text-align:right;white-space:nowrap">${lvScore(i)} / ${lvMax(i)}</td></tr>`).join("")}</table></div></div>
+ <div class="act"><button class="btn sec" id="syn">Fiche synthèse en PDF</button><button class="btn" id="pdf">Enregistrer notre bilan en PDF</button><button class="btn sec" id="map">Plan du magasin</button></div><p id="msg" role="status"></p>`;
+}
+let DL=null;try{window.claude?.use?.("downloads")?.then(x=>{DL=x}).catch(()=>{})}catch(e){}
+const SYN=[["Le schéma de la communication","L'émetteur envoie un message au récepteur par un canal (oral en face à face, téléphone, écrit). Le bruit est tout ce qui gêne le message : un son, la distance, l'inattention. Le feedback est la réponse du récepteur : il montre si le message a été compris.","Client (émetteur) : « Ce casque existe en L ? » -> vendeur (récepteur). Bruit : l'alarme de la porte. Feedback : « Je vais le chercher en réserve. »"],
+["Verbal, non verbal, para-verbal","Verbal : les mots choisis. Non verbal : le corps (posture, regard, sourire, gestes, distance). Para-verbal : la voix (volume, débit, ton, soupirs). Les trois doivent dire la même chose : en cas de contradiction, le client croit le corps et la voix.","« Prenez votre temps » en regardant sa montre et en soupirant : le client comprend qu'il dérange."],
+["L'accueil et la posture","SBAM : Sourire, Bonjour, Au revoir, Merci. Saluer le client dans les 30 secondes, ranger son téléphone, aller vers lui. Posture ouverte (buste droit, mains visibles, regard franc), tenue soignée, badge visible.","À éviter : bras croisés, mains dans les poches, chewing-gum, s'appuyer contre une étagère."],
+["Les distances (proxémie)","Zone intime : moins de 45 cm, on n'y entre jamais et on ne touche pas le client. Zone personnelle : 45 cm à 1,20 m, pour conseiller et faire essayer. Zone sociale : 1,20 m à 3,60 m, pour saluer et aborder. Zone publique : plus de 3,60 m, pour s'adresser à un groupe.",""],
+["La relation omnicanale","Le client contacte le magasin en face à face, par téléphone ou par écrit (courriel, chat, avis en ligne). On adapte sa communication au canal : au téléphone, le client ne voit pas le vendeur, seuls les mots et la voix comptent.","Accueil téléphonique : « Sport Évasion Alençon, bonjour, Chloé à l'appareil, que puis-je faire pour vous ? »"],
+["Le registre de langue","Familier (interdit face au client), courant, soutenu. Adapter son registre, c'est choisir des mots professionnels. Attention : ce n'est pas une reformulation.","« J'sais pas » -> « Je vais me renseigner ». « Ouais » -> « Oui, Monsieur »."],
+["Les questions","Les questions ouvertes laissent le client s'exprimer : on les utilise pour découvrir son besoin. Les questions fermées appellent une réponse courte : on les utilise pour préciser ou faire choisir.","Ouverte : « Comment utilisez-vous votre vélo ? » Fermée : « Vous préférez la taille M ou L ? »"],
+["Visuel, auditif, kinesthésique","On repère les mots du client pour lui présenter le produit à sa façon. Visuel (voir, couleur, joli) : on montre. Auditif (entendre, bruit, expliquer) : on explique. Kinesthésique (toucher, léger, confortable) : on fait essayer.","« Je veux une veste douce, qui ne gratte pas » -> client kinesthésique -> « Touchez cette matière. »"],
+["L'écoute active","Écouter le client avec toute son attention pour comprendre son besoin, et lui montrer qu'on l'écoute : le regarder, hocher la tête, le laisser finir, poser des questions, reformuler.","Écouter en rangeant le rayon ou en regardant sa montre, ce n'est pas de l'écoute active."],
+["La reformulation","Redire avec ses propres mots ce que le client vient de dire, pour vérifier qu'on a bien compris avant de proposer un produit. Écho : reprendre ses derniers mots. Synthèse : résumer toutes ses attentes et les faire valider. Clarification : faire préciser une idée floue.","Synthèse : « Si je comprends bien, vous cherchez… : c'est bien cela ? »"],
+["Traiter une réclamation","1. Accueillir et écouter (se présenter, laisser parler). 2. S'excuser au nom du magasin, sans rejeter la faute. 3. Reformuler le problème et la demande. 4. Proposer une solution possible, avec une date. 5. Conclure : dire ce qui va se passer, remercier.","Jamais : « C'est pas nous, c'est la marque » ou « Rappelez demain »."],
+["Le courriel de réponse","Objet clair ; formule d'appel (Madame, Monsieur) ; remerciement pour le message ; excuses ; reformulation du problème ; solution précise et datée (+ geste commercial si prévu) ; formule de politesse finale ; signature complète (prénom, nom, fonction, magasin).",""]];
+function makeSyn(){
+ const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"mm",format:"a4"});const m=14,W=182;let y=0;
+ const head=()=>{doc.setFillColor(11,61,145);doc.rect(0,0,210,22,"F");doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text("Fiche synthèse — La communication professionnelle",m,11);doc.setFont("helvetica","normal");doc.setFontSize(10);doc.text("2de Bac Pro MRC — à conserver et à relire avant l'évaluation",m,17.5);y=30};
+ head();
+ const wrap=(t,sz,st)=>{doc.setFont("helvetica",st);doc.setFontSize(sz);return doc.splitTextToSize(t,W-8)};
+ const cols=[[11,61,145],[194,65,12],[124,58,237],[15,118,110],[190,18,60],[31,41,55]];
+ SYN.forEach(([t,d,ex],k)=>{const ld=wrap(d,10,"normal"),le=ex?wrap("Exemple : "+ex,9.5,"italic"):[];const h=8+ld.length*4.3+(le.length?le.length*4.1+1.5:0)+3;
+  if(y+h>285){doc.addPage();head()}
+  const c=cols[k%cols.length];doc.setFillColor(...c);doc.rect(m,y,2.2,h-2,"F");doc.setFillColor(243,246,251);doc.rect(m+2.2,y,W-2.2,h-2,"F");
+  doc.setTextColor(...c);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text((k+1)+". "+t,m+5,y+6);
+  doc.setTextColor(17,24,39);doc.setFont("helvetica","normal");doc.setFontSize(10);let yy=y+11.5;ld.forEach(l=>{doc.text(l,m+5,yy);yy+=4.3});
+  if(le.length){doc.setFont("helvetica","italic");doc.setFontSize(9.5);doc.setTextColor(75,85,99);yy+=0.5;le.forEach(l=>{doc.text(l,m+5,yy);yy+=4.1})}
+  y+=h});
+ if(y>240){doc.addPage();head()}
+ doc.setTextColor(11,61,145);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text("Avant l'évaluation, je vérifie que je sais :",m,y+4);y+=10;
+ doc.setTextColor(17,24,39);doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setDrawColor(75,85,99);
+ ["compléter un schéma de communication à partir d'un dialogue","classer un comportement en verbal, non verbal ou para-verbal et dire son effet","réécrire une phrase familière en langage professionnel","choisir la bonne distance selon la situation","repérer si un client est visuel, auditif ou kinesthésique","rédiger une reformulation écho et une reformulation synthèse","relever les erreurs d'un vendeur face à une réclamation","rédiger un courriel de réponse complet"].forEach(t=>{if(y>287){doc.addPage();head()}doc.rect(m,y-3.2,3.6,3.6);doc.text(t,m+6,y);y+=5.6});
+ return doc.output("blob");
+}
+function makePdf(){
+ const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"mm",format:"a4"});const m=15,W=180;let y=20;
+ const put=(t,sz=10.5,bold=false,col=[17,24,39],gap=1.4)=>{doc.setFont("helvetica",bold?"bold":"normal");doc.setFontSize(sz);doc.setTextColor(...col);String(t).split("\n").forEach(par=>{doc.splitTextToSize(par||" ",W).forEach(l=>{if(y>283){doc.addPage();y=16}doc.text(l,m,y);y+=sz*.42})});y+=gap};
+ doc.setFillColor(11,61,145);doc.rect(0,0,210,11,"F");doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(10);doc.text("2de Bac Pro MRC — Révision : la communication professionnelle",m,7.5);
+ put("Bilan — Le Défi du vendeur",18,true,[11,61,145],2);put("Équipe : "+S.noms,12,true);put("Date : "+new Date().toLocaleDateString("fr-FR")+"   —   Score : "+total()+" / "+totMax+" points",11,false,[75,85,99],4);
+ put("Résultats par rayon",13,true,[11,61,145],1);LV.forEach((v,i)=>put(v.n+" : "+lvScore(i)+" / "+lvMax(i)+((S.tries[i]||1)>1?" (réussi en "+S.tries[i]+" essais)":""),10.5,false,[17,24,39],.3));y+=3;
+ put("Accroche : avant / après",13,true,[11,61,145],1);ACC.forEach((t,i)=>put("« "+t+" »  Avant : "+(S.acc.b[i]!=null?ACCO[S.acc.b[i]]:"—")+"  /  Après : "+(S.acc.a[i]!=null?ACCO[S.acc.a[i]]:"—"),10,false,[17,24,39],.6));
+ if(S.acc.w)put("Notre justification : "+S.acc.w,10,false,[75,85,99],3);
+ put("Nos productions écrites",13,true,[11,61,145],1);
+ LV.forEach(v=>v.acts.filter(a=>a.type==="write").forEach(a=>{const st=A(a.id);put(a.title,11.5,true,[255,106,19],.8);a.items.forEach((it,k)=>{const checks=Array.isArray(it[2])?it[2]:a.checks;put(it[0],10.5,true,[17,24,39],.4);put(st.txt[k]||"(pas de réponse)",10,false,[17,24,39],.6);put("Auto-évaluation : "+checks.map((c,j)=>(st.chk[k+"-"+j]?"[x] ":"[ ] ")+c).join("  "),9,false,[75,85,99],2.5)})}));
+ return doc.output("blob");
+}
+async function savePdf(syn){const msg=document.getElementById("msg");if(!window.jspdf){try{window.print()}catch(e){}msg.textContent="Choisissez « Enregistrer au format PDF » dans la fenêtre d'impression.";return}
+ const name=syn?"Fiche_synthese_communication_pro_2MRC.pdf":"Bilan_Defi_vendeur_"+(S.noms||"equipe").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9]+/g,"_").slice(0,60)+".pdf",blob=syn?makeSyn():makePdf();
+ const fb=()=>{const l=document.createElement("a");l.href=URL.createObjectURL(blob);l.download=name;document.body.appendChild(l);l.click();l.remove()};
+ if(DL){try{await DL.save({filename:name,data:blob});msg.textContent="Bilan enregistré."}catch(e){msg.textContent=e&&e.code==="declined"?"Enregistrement annulé.":"Enregistrement impossible ici.";if(!e||e.code!=="declined"){try{fb()}catch(x){}}}return}
+ try{fb();msg.textContent="Le PDF a été téléchargé."}catch(e){msg.textContent="Enregistrement impossible ici."}}
+app.addEventListener("click",ev=>{
+ const b=ev.target.closest("button");if(!b)return;const d=b.dataset;
+ if(b.id==="unlock"){const v=document.getElementById("code0").value;if(hc(v)===CODE_SEANCE||hc(v)===CODE_PROF){S.ok=true;render();if(S.noms)askResume()}else{document.getElementById("code0m").textContent="Code incorrect. Attendez le code donné en classe."}return}
+ if(b.id==="go"){const n=document.getElementById("noms").value.trim();if(!n){document.getElementById("noms").focus();return}S.noms=n;S.t0=S.t0||Date.now();S.scr="acc";save();render();return}
+ if(d.acc!==undefined){S.acc.w=document.getElementById("accw").value;S.acc.b[+d.acc]=+d.v;save();render();return}
+ if(b.id==="accok"){S.acc.w=document.getElementById("accw").value;S.scr="home";save();render();return}
+ if(d.lv!==undefined){S.lv=+d.lv;const v=LV[S.lv];if(lvTried(S.lv)&&!S.done.includes(S.lv))resetLv(S.lv);S.ai=Math.max(0,v.acts.findIndex(a=>!A(a.id).done));if(v.acts.every(a=>A(a.id).done))S.ai=0;S.scr="lvl";save();render();window.scrollTo(0,0);return}
+ if(b.id==="map"){S.scr="home";save();render();window.scrollTo(0,0);return}
+ if(b.id==="newg"){askNew();return}
+ if(b.id==="tofinal"){S.scr="final";save();render();window.scrollTo(0,0);return}
+ if(S.scr==="lvl"){const a=LV[S.lv].acts[S.ai],st=A(a.id);
+  if(d.v!==undefined&&d.k!==undefined&&!st.done){st.sel[+d.k]=+d.v;save();render();return}
+  if(a.type==="spot"&&d.k!==undefined&&!st.done){st.sel[+d.k]=!st.sel[+d.k];save();render();return}
+  if(d.pc!==undefined){(st.sel.seq=st.sel.seq||[]).push(+d.pc);save();render();return}
+  if(b.id==="clr"){st.sel.seq=[];save();render();return}
+  if(d.o!==undefined&&!st.done){st.sel.p=+d.o;save();render();return}
+  if(b.id==="reveal"){if(Object.values(st.txt).filter(x=>x&&x.trim()).length<a.items.length){alertIn("Écrivez d'abord toutes vos réponses : c'est en essayant que l'on progresse.");return}st.ph=1;save();render();return}
+  if(b.id==="check"){check();return}
+  if(b.id==="bstart"){st.sel.i=0;st.sel.res=[];st.sel.ts=Date.now();save();render();tick();return}
+  if(d.bo!==undefined){bossAnswer(+d.bo);return}
+  if(d.mc!==undefined){memClick(+d.mc);return}
+  if(b.id==="next"){const v=LV[S.lv];if(S.ai<v.acts.length-1){S.ai++}else{const i=S.lv;if(S.done.includes(i)||lvOk(i)){if(!S.done.includes(i))S.done.push(i);S.scr="home";save();render();window.scrollTo(0,0);celebrate(v);return}S.scr="home";save();render();window.scrollTo(0,0);failed(i);return}save();render();window.scrollTo(0,0);return}
+ }
+ if(b.id==="cdok"){const v=document.getElementById("cd").value.trim().toUpperCase();S.codeTry=v;if(v==="CLIENT"){S.code=true;save();render();window.scrollTo(0,0)}else{document.getElementById("cdm").textContent="Ce n'est pas le bon mot. Indice : c'est la personne au centre de tout votre métier.";save()}return}
+ if(d.acc2!==undefined){S.acc.a[+d.acc2]=+d.v;save();render();return}
+ if(b.id==="pdf"){savePdf();return}
+ if(b.id==="syn"){savePdf(true);return}
+});
+app.addEventListener("click",ev=>{const p=ev.target.closest("[data-cwl]");if(!p||S.scr!=="lvl")return;const a=LV[S.lv].acts[S.ai],w=a.words[+p.dataset.cwl];cwDir=w[4];const el=app.querySelector(`[data-cw="${w[2]},${w[3]}"]`);if(el){el.focus();el.select()}});
+app.addEventListener("dblclick",ev=>{if(ev.target.dataset.cw){cwDir=cwDir==="a"?"d":"a"}});
+app.addEventListener("focusin",ev=>{const k=ev.target.dataset?.cw;if(!k||S.scr!=="lvl")return;const a=LV[S.lv].acts[S.ai];const [rr,cc]=k.split(",").map(Number);const inA=a.words.some(w=>w[4]==="a"&&w[2]===rr&&cc>=w[3]&&cc<w[3]+w[0].length),inD=a.words.some(w=>w[4]==="d"&&w[3]===cc&&rr>=w[2]&&rr<w[2]+w[0].length);if(cwDir==="a"&&!inA)cwDir="d";else if(cwDir==="d"&&!inD)cwDir="a"});
+app.addEventListener("keydown",ev=>{const k=ev.target.dataset?.cw;if(!k)return;if(ev.key==="Backspace"&&!ev.target.value){ev.preventDefault();cwMove(k,-1)}else if(ev.key==="ArrowRight"){cwDir="a";cwMove(k,1)}else if(ev.key==="ArrowLeft"){cwDir="a";cwMove(k,-1)}else if(ev.key==="ArrowDown"){cwDir="d";cwMove(k,1)}else if(ev.key==="ArrowUp"){cwDir="d";cwMove(k,-1)}});
+app.addEventListener("input",ev=>{const t=ev.target;if(S.scr!=="lvl")return;const a=LV[S.lv].acts[S.ai],st=A(a.id);
+ if(t.dataset.cw){const v=norm(t.value).replace(/[^A-Z]/g,"").slice(-1);t.value=v;(st.sel.g=st.sel.g||{})[t.dataset.cw]=v;save();if(v)cwMove(t.dataset.cw,1);return}
+ if(t.tagName==="TEXTAREA"&&t.dataset.k!==undefined){st.txt[+t.dataset.k]=t.value;save()}
+ if(t.type==="range"){st.sel[+t.dataset.k]=+t.value;document.getElementById("v"+t.dataset.k).textContent=(+t.value).toFixed(2).replace(".",",")+" m";save()}});
+app.addEventListener("change",ev=>{const t=ev.target;if(S.scr!=="lvl")return;const a=LV[S.lv].acts[S.ai],st=A(a.id);
+ if(t.tagName==="SELECT"){st.sel[+t.dataset.k]=t.value===""?undefined:+t.value;save()}
+ if(t.type==="checkbox"){st.chk[t.dataset.ck]=t.checked;save()}});
+app.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&ev.target.id==="code0")document.getElementById("unlock").click();if(ev.key==="Enter"&&ev.target.id==="noms")document.getElementById("go").click();if(ev.key==="Enter"&&ev.target.id==="cd")document.getElementById("cdok").click()});
+function alertIn(t){const m=document.createElement("div");m.className="modal";m.innerHTML=`<div class="card"><div class="pad"><p>${esc(t)}</p><div class="act"><button class="btn" id="mok">D'accord</button></div></div></div>`;document.body.appendChild(m);m.querySelector("#mok").onclick=()=>m.remove();m.querySelector("#mok").focus()}
+function celebrate(v){const m=document.createElement("div");m.className="modal";m.innerHTML=`<div class="card"><div class="tag" style="background:${v.c}"><b>${esc(v.n)} validé !</b></div><div class="pad" style="text-align:center"><p>Vous gagnez la lettre</p><p class="disp" style="font-size:72px;margin:0;color:${v.c}">${v.l}</p><div class="act" style="justify-content:center"><button class="btn" id="mok">Retour au plan</button></div></div></div>`;document.body.appendChild(m);const k=m.querySelector("#mok");k.onclick=()=>m.remove();k.focus()}
+function failed(i){const v=LV[i],m=document.createElement("div");m.className="modal";m.innerHTML=`<div class="card"><div class="tag" style="background:${v.c}"><b>${esc(v.n)} : pas encore de lettre</b></div><div class="pad"><p>Vous avez obtenu <b>${lvScore(i)} / ${lvMax(i)} points</b>. Pour gagner la lettre, il faut au moins <b>${esc(need(i))}</b>.</p><p>Relisez les corrections, puis refaites le rayon en prenant votre temps. Vos textes déjà écrits sont conservés.</p><div class="act"><button class="btn sec" id="mno">Retour au plan</button><button class="btn" id="mredo">Refaire le rayon</button></div></div></div>`;document.body.appendChild(m);m.querySelector("#mno").onclick=()=>{m.remove();render()};const k=m.querySelector("#mredo");k.onclick=()=>{m.remove();resetLv(i);S.lv=i;S.ai=0;S.scr="lvl";save();render();window.scrollTo(0,0)};k.focus()}
+function askNew(){const m=document.createElement("div");m.className="modal";m.innerHTML=`<div class="card"><div class="tag"><b>Commencer une nouvelle partie ?</b></div><div class="pad"><p>La partie de l'équipe <b>${esc(S.noms)}</b> sera effacée de cet ordinateur. Pensez à enregistrer le bilan PDF avant si besoin.</p><div class="act"><button class="btn sec" id="nno">Annuler</button><button class="btn" id="nyes">Effacer et recommencer</button></div></div></div>`;document.body.appendChild(m);m.querySelector("#nno").onclick=()=>m.remove();m.querySelector("#nyes").onclick=()=>{m.remove();S=Object.assign(fresh(),{ok:true});save();render();window.scrollTo(0,0)};m.querySelector("#nno").focus()}
+function askResume(){const m=document.createElement("div");m.className="modal";const n=S.done.length;m.innerHTML=`<div class="card"><div class="tag"><b>Une partie est déjà en cours</b></div><div class="pad"><p>Équipe : <b>${esc(S.noms)}</b><br>${n} rayon${n>1?"s":""} validé${n>1?"s":""} sur 6 — ${total()} points.</p><p>C'est votre équipe ? Reprenez votre partie. Sinon, commencez une nouvelle partie.</p><div class="act"><button class="btn sec" id="rnew">Nouvelle partie</button><button class="btn" id="rgo">Reprendre</button></div></div></div>`;document.body.appendChild(m);m.querySelector("#rgo").onclick=()=>m.remove();m.querySelector("#rnew").onclick=()=>{m.remove();S=Object.assign(fresh(),{ok:true});save();render();window.scrollTo(0,0)};m.querySelector("#rgo").focus()}
+let clicks=0;document.getElementById("prof").addEventListener("click",()=>{if(++clicks>=3){clicks=0;const m=document.createElement("div");m.className="modal";m.innerHTML=`<div class="card"><div class="tag"><b>Espace enseignant</b></div><div class="pad"><div id="pz"><label class="cons" for="pc">Code enseignant</label><input type="text" id="pc" autocomplete="off" style="max-width:220px"><p class="why" id="pcm"></p><div class="act"><button class="btn sec" id="pcx">Fermer</button><button class="btn" id="pcok">Valider</button></div></div><div class="act" id="pa" style="justify-content:flex-start;display:none"><button class="btn" id="unl">${S.all?"Refermer":"Ouvrir"} tous les rayons</button><button class="btn sec" id="rst">Effacer cette partie</button><button class="btn sec" id="cls">Fermer</button></div></div></div>`;document.body.appendChild(m);m.querySelector("#pcx").onclick=()=>m.remove();const pc=m.querySelector("#pc");pc.focus();const pok=()=>{if(hc(pc.value)===CODE_PROF){m.querySelector("#pz").style.display="none";m.querySelector("#pa").style.display="flex"}else{m.querySelector("#pcm").textContent="Code incorrect."}};m.querySelector("#pcok").onclick=pok;pc.addEventListener("keydown",e=>{if(e.key==="Enter")pok()});m.querySelector("#unl").onclick=()=>{S.all=!S.all;save();m.remove();render()};m.querySelector("#rst").onclick=()=>{S=Object.assign(fresh(),{ok:true});save();m.remove();render()};m.querySelector("#cls").onclick=()=>m.remove()}});
+window.claude?.hot?.snapshot?.(()=>S);
+const boot=data=>{const hot=!!(data&&data.scr);if(hot)S=Object.assign(fresh(),data);render();if(!hot&&S.ok&&S.noms)askResume();const a=S.scr==="lvl"?LV[S.lv].acts[S.ai]:null;if(a&&a.type==="boss"){const b=A(a.id).sel;if(b.i>=0&&b.i<a.qs.length){b.ts=Date.now();tick()}}};
+window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});
+}
+</script>
+</body>
+</html>
